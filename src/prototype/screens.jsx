@@ -867,7 +867,7 @@ function Reading({ metric, name, value, dir, trend, amount, values, baseline, ba
 /* 04 · Structure — Log detail */
 // Building the insights takes a while, so the companion says what it is doing.
 // Each line shows for an equal share of the wait.
-const BUILD_MS = 20000;
+const BUILD_MS = 10000;
 const buildSteps = [
   "Reading your log…",
   "Matching it with your sensor data…",
