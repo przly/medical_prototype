@@ -1,18 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import { Alert, Avatar, Button, Card as HeroCard, Chip, Meter, ProgressBar, Switch } from "@heroui/react";
 import {
+  Accessibility,
+  Activity,
+  Apple,
   ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
   AudioLines,
+  Baby,
+  Brain,
   Briefcase,
   CalendarDays,
   ChartLine,
   Check,
+  ChevronLeft,
   CircleCheck,
   ClipboardList,
   Dumbbell,
+  FileText,
+  FlaskConical,
+  Headphones,
   Heart,
   HeartPulse,
+  Hospital,
   Info,
   Lock,
   Mic,
@@ -21,13 +33,19 @@ import {
   Presentation,
   Repeat,
   RotateCcw,
+  Salad,
+  Send,
   ShieldCheck,
   ShieldOff,
   Smile,
   Sprout,
+  Stethoscope,
+  Syringe,
   Target,
   TrendingUp,
   User,
+  Users,
+  Utensils,
   Watch,
   Waypoints,
   Zap,
@@ -97,7 +115,7 @@ const item = {
 
 // iOS navigation: a large title that hands over to a compact inline title,
 // with a soft scroll-edge blur (no hard bar) once content moves under it.
-function Screen({ eyebrow, title, trailing, action, children }) {
+function Screen({ eyebrow, title, trailing, action, full, children }) {
   const scrollRef = useRef(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const barOpacity = useTransform(scrollY, [24, 48], [0, 1]);
@@ -106,7 +124,7 @@ function Screen({ eyebrow, title, trailing, action, children }) {
   const titleOpacity = useTransform(scrollY, [8, 40], [1, 0]);
 
   return (
-    <div className="screen-inner">
+    <div className={`screen-inner ${full ? "screen-full" : ""}`}>
       <motion.div className="scroll-edge" style={{ opacity: barOpacity }} aria-hidden="true" />
       <div className="navbar">
         <motion.span className="navbar-title" style={{ opacity: barOpacity }}>
@@ -147,25 +165,69 @@ function Screen({ eyebrow, title, trailing, action, children }) {
   );
 }
 
+// HeroUI components in their default styling; these wrappers only add the
+// staggered entrance and the icon slot the screens share.
+const MotionCard = motion.create(HeroCard);
+
 function Card({ children, className = "", ...rest }) {
   return (
-    <motion.div className={`app-card ${className}`} variants={item} {...rest}>
+    <MotionCard className={className} variants={item} {...rest}>
       {children}
-    </motion.div>
+    </MotionCard>
   );
 }
 
 function Primary({ children, icon: ButtonIcon, onClick, disabled }) {
   return (
-    <motion.button
-      className="app-primary"
-      onClick={onClick}
-      disabled={disabled}
-      whileTap={{ scale: 0.97 }}
-    >
+    <Button fullWidth size="lg" onPress={onClick} isDisabled={disabled}>
       {ButtonIcon && <ButtonIcon {...iconProps} />}
       {children}
-    </motion.button>
+    </Button>
+  );
+}
+
+function Danger({ children, icon: ButtonIcon, onClick }) {
+  return (
+    <Button fullWidth size="lg" variant="danger-soft" onPress={onClick}>
+      {ButtonIcon && <ButtonIcon {...iconProps} />}
+      {children}
+    </Button>
+  );
+}
+
+// Low-emphasis action under the main one.
+function Quiet({ children, onClick, danger }) {
+  return (
+    <Button fullWidth variant="ghost" className={danger ? "text-danger" : ""} onPress={onClick}>
+      {children}
+    </Button>
+  );
+}
+
+function Toggle({ label, on, onChange, disabled }) {
+  return (
+    <Switch aria-label={label} isSelected={on} isDisabled={disabled} onChange={onChange}>
+      <Switch.Content>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch.Content>
+    </Switch>
+  );
+}
+
+// Inline message with an icon: privacy notes, caveats, confirmations.
+function Note({ icon: NoteIcon, status, title, children }) {
+  return (
+    <motion.div variants={item}>
+      <Alert status={status}>
+        <Alert.Indicator>{NoteIcon && <NoteIcon size={16} strokeWidth={2.25} aria-hidden="true" />}</Alert.Indicator>
+        <Alert.Content>
+          {title && <Alert.Title>{title}</Alert.Title>}
+          <Alert.Description>{children}</Alert.Description>
+        </Alert.Content>
+      </Alert>
+    </motion.div>
   );
 }
 
@@ -173,7 +235,7 @@ function Ring({ value, metric, label, sub }) {
   const r = 30;
   const { color } = metrics[metric];
   return (
-    <div className="ring">
+    <div className="vital">
       <span className="ring-icon">
         <MetricIcon metric={metric} size={20} />
       </span>
@@ -198,18 +260,223 @@ function Ring({ value, metric, label, sub }) {
 
 // Tags say where a piece of information came from.
 const tagIcons = { sensor: Watch, you: User, pos: Sprout, neutral: Repeat };
+const tagColors = { sensor: "accent", you: "warning", pos: "success", neutral: "default" };
 
 function Tag({ kind, children }) {
   const TagIcon = tagIcons[kind];
   return (
-    <span className={`tag tag-${kind}`}>
+    <Chip size="sm" variant="soft" color={tagColors[kind]}>
       {TagIcon && <TagIcon size={11} strokeWidth={2.5} aria-hidden="true" />}
-      {children}
-    </span>
+      <Chip.Label>{children}</Chip.Label>
+    </Chip>
   );
 }
 
-/* 01 · Sense — Today */
+/* 01 · Set up — Onboarding */
+// Five short pages. Each row is [label, icon, colour, detail]; the page's
+// `control` decides what sits at the end of the row.
+const setup = [
+  {
+    title: "About you",
+    lede: "A few basics, so your signals are read in the right context.",
+    cards: [
+      {
+        label: "Personal data",
+        control: "value",
+        rows: [
+          ["Name", User, "var(--accent)", "Sanne Koster"],
+          ["Age", CalendarDays, "var(--app-sleep)", "34"],
+          ["Gender", Users, "var(--app-mood)", "Woman"],
+          ["Chronic condition", Activity, "var(--app-heart)", "None"],
+        ],
+      },
+      {
+        label: "Right now",
+        control: "switch",
+        rows: [
+          ["Pregnant", Baby, "var(--app-stress)"],
+          ["Physical disability", Accessibility, "var(--app-activity)"],
+        ],
+      },
+    ],
+  },
+  {
+    title: "Your sensors",
+    lede: "Sensors track your body in the background. You don’t have to do anything.",
+    cards: [
+      {
+        label: "Wearables",
+        control: "connect",
+        rows: [
+          ["Apple Watch", Watch, "var(--app-heart)", "Sleep, heart rate, HRV"],
+          ["AirPods", Headphones, "var(--app-sleep)", "Voice reflections"],
+        ],
+      },
+      {
+        label: "Brain wave sensors",
+        control: "connect",
+        rows: [["EEG headband", Brain, "var(--app-mood)", "Focus and relaxation"]],
+      },
+    ],
+  },
+  {
+    title: "Food logging",
+    lede: "Already logging meals? Connect the app, so food shows up next to sleep, mood and energy.",
+    cards: [
+      {
+        label: "Food apps",
+        control: "connect",
+        rows: [
+          ["MyFitnessPal", Utensils, "var(--app-sleep)", "Meals and calories"],
+          ["Lifesum", Salad, "var(--app-activity)", "Meals and water"],
+          ["Yazio", Apple, "var(--app-stress)", "Meals and fasting"],
+        ],
+      },
+    ],
+  },
+  {
+    title: "Medical data",
+    optional: true,
+    lede: "Bring in your records for a fuller picture. You can add them later.",
+    cards: [
+      {
+        label: "Import",
+        control: "switch",
+        rows: [
+          ["GP medical records", Stethoscope, "var(--accent)"],
+          ["Vaccine history", Syringe, "var(--app-sleep)"],
+          ["Operations history", Hospital, "var(--app-heart)"],
+          ["Dental records", Smile, "var(--app-activity)"],
+        ],
+      },
+    ],
+    note: [Lock, "Private by default. Nothing is shared unless you choose to."],
+  },
+  {
+    title: "Family",
+    optional: true,
+    lede: "Linking relatives helps spot conditions that run in your family.",
+    cards: [
+      {
+        label: "Invite relatives",
+        control: "invite",
+        rows: [
+          ["Mother", User, "var(--app-mood)"],
+          ["Father", User, "var(--app-sleep)"],
+          ["Sibling", Users, "var(--app-stress)"],
+        ],
+      },
+    ],
+    note: [Info, "You’ll see a risk index for hereditary conditions. It is an estimate, not a diagnosis."],
+  },
+];
+
+const pillWords = { connect: ["Connect", "Connected"], invite: ["Invite", "Invited"] };
+
+function Onboarding({ next }) {
+  const [page, setPage] = useState(0);
+  const [on, setOn] = useState({});
+  const p = setup[page];
+  const last = page === setup.length - 1;
+
+  const toggle = (key) => {
+    haptic();
+    setOn((s) => ({ ...s, [key]: !s[key] }));
+  };
+  const forward = () => (last ? next() : setPage(page + 1));
+
+  return (
+    <Screen
+      full
+      eyebrow={`Step ${page + 1} of ${setup.length}${p.optional ? " · Optional" : ""}`}
+      title={p.title}
+      action={
+        <>
+          <Primary icon={last ? Check : ArrowRight} onClick={forward}>
+            {last ? "Finish setup" : "Continue"}
+          </Primary>
+          {p.optional && <Quiet onClick={forward}>Skip for now</Quiet>}
+        </>
+      }
+    >
+      <motion.div className="setup-top" variants={item}>
+        {page > 0 && (
+          <Button
+            isIconOnly
+            size="sm"
+            variant="tertiary"
+            aria-label="Previous setup step"
+            onPress={() => setPage(page - 1)}
+          >
+            <ChevronLeft size={18} strokeWidth={2.5} aria-hidden="true" />
+          </Button>
+        )}
+        <ProgressBar
+          aria-label="Setup progress"
+          size="sm"
+          className="flex-1"
+          value={((page + 1) / setup.length) * 100}
+        >
+          <ProgressBar.Track>
+            <ProgressBar.Fill />
+          </ProgressBar.Track>
+        </ProgressBar>
+      </motion.div>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={page}
+          className="setup-page"
+          variants={list}
+          initial="initial"
+          animate="animate"
+          exit={{ opacity: 0, transition: { duration: 0.15 } }}
+        >
+          <motion.p className="setup-lede" variants={item}>
+            {p.lede}
+          </motion.p>
+          {p.cards.map((card) => (
+            <Card key={card.label}>
+              <span className="card-label">{card.label}</span>
+              <ul className="toggles setup-rows">
+                {card.rows.map(([label, RowIcon, color, detail]) => (
+                  <li key={label}>
+                    <span className="toggle-label">
+                      <span className="tile" style={{ background: color }}>
+                        <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
+                      </span>
+                      <span className="row-text">
+                        {label}
+                        {detail && card.control !== "value" && <small>{detail}</small>}
+                      </span>
+                    </span>
+                    {card.control === "value" && <span className="row-value">{detail}</span>}
+                    {card.control === "switch" && (
+                      <Toggle label={label} on={!!on[label]} onChange={() => toggle(label)} />
+                    )}
+                    {pillWords[card.control] && (
+                      <Button
+                        size="sm"
+                        variant={on[label] ? "tertiary" : "secondary"}
+                        aria-label={`${pillWords[card.control][0]} ${label}`}
+                        onPress={() => toggle(label)}
+                      >
+                        {on[label] && <Check size={14} strokeWidth={2.75} aria-hidden="true" />}
+                        {pillWords[card.control][on[label] ? 1 : 0]}
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ))}
+          {p.note && <Note icon={p.note[0]}>{p.note[1]}</Note>}
+        </motion.div>
+      </AnimatePresence>
+    </Screen>
+  );
+}
+
+/* 02 · Sense — Today */
 function Today({ next }) {
   const hr = [58, 57, 59, 56, 58, 61, 57];
   return (
@@ -218,9 +485,9 @@ function Today({ next }) {
       title="Good afternoon"
       action={<Primary icon={Mic} onClick={next}>Log a thought</Primary>}
       trailing={
-        <button className="glass-circle avatar-btn" aria-label="Profile and privacy">
-          SK
-        </button>
+        <Avatar color="accent" aria-label="Sanne Koster">
+          <Avatar.Fallback>SK</Avatar.Fallback>
+        </Avatar>
       }
     >
       <Card className="rings">
@@ -259,7 +526,7 @@ function Today({ next }) {
   );
 }
 
-/* 02 · Capture — Quick reflection */
+/* 03 · Capture — Quick reflection */
 const transcript =
   "Really stressful day today. I had a big presentation at work and barely slept last night.";
 
@@ -330,14 +597,19 @@ function Capture({ next }) {
       <AnimatePresence>
         {saved && (
           <motion.div
-            className="toast"
+            className="saved-toast"
             initial={{ opacity: 0, y: 16, scale: 0.94, filter: "blur(6px)" }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 16, scale: 0.94, filter: "blur(6px)" }}
             transition={spring}
           >
-            <Check {...iconProps} />
-            Reflection saved · 18 sec · Today, 16:42
+            <Alert status="success">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>Reflection saved</Alert.Title>
+                <Alert.Description>18 sec · Today, 16:42</Alert.Description>
+              </Alert.Content>
+            </Alert>
           </motion.div>
         )}
       </AnimatePresence>
@@ -345,7 +617,7 @@ function Capture({ next }) {
   );
 }
 
-/* 03 · Structure — Reflection detail */
+/* 04 · Structure — Reflection detail */
 function Structure({ next }) {
   return (
     <Screen
@@ -359,9 +631,9 @@ function Structure({ next }) {
       <Card>
         <span className="card-label">Context</span>
         <div className="chips">
-          <span><Briefcase size={13} strokeWidth={2.25} aria-hidden="true" />Work</span>
-          <span><Presentation size={13} strokeWidth={2.25} aria-hidden="true" />Presentation</span>
-          <span><Moon size={13} strokeWidth={2.25} aria-hidden="true" />Poor sleep</span>
+          <Chip><Briefcase size={13} strokeWidth={2.25} aria-hidden="true" /><Chip.Label>Work</Chip.Label></Chip>
+          <Chip><Presentation size={13} strokeWidth={2.25} aria-hidden="true" /><Chip.Label>Presentation</Chip.Label></Chip>
+          <Chip><Moon size={13} strokeWidth={2.25} aria-hidden="true" /><Chip.Label>Poor sleep</Chip.Label></Chip>
         </div>
       </Card>
       <Card>
@@ -369,9 +641,9 @@ function Structure({ next }) {
           <span className="card-label">You said you felt</span>
           <Tag kind="you">You reported</Tag>
         </div>
-        <div className="chips chips-warm">
-          <span>Stressed</span>
-          <span>Tired</span>
+        <div className="chips">
+          <Chip color="warning" variant="soft">Stressed</Chip>
+          <Chip color="warning" variant="soft">Tired</Chip>
         </div>
       </Card>
       <Card>
@@ -388,7 +660,7 @@ function Structure({ next }) {
   );
 }
 
-/* 04 · Connect — associations */
+/* 05 · Connect — associations */
 const links = [
   { a: "Work deadlines", b: "Higher stress", n: "4 of 5 days", strength: 0.8 },
   { a: "Short sleep", b: "Feeling tired", n: "6 of 8 days", strength: 0.75 },
@@ -405,7 +677,7 @@ function Connect({ next }) {
       {links.map((l, i) => (
         <Card key={l.a} className="link-card">
           <div className="link-row">
-            <span className="node">{l.a}</span>
+            <Chip className="justify-center">{l.a}</Chip>
             <svg viewBox="0 0 60 12" className="link-line" aria-hidden="true">
               <motion.path
                 d="M2 6 H58"
@@ -415,33 +687,34 @@ function Connect({ next }) {
                 transition={{ duration: 0.7, delay: 0.3 + i * 0.15, ease }}
               />
             </svg>
-            <span className={`node ${l.positive ? "node-pos" : ""}`}>{l.b}</span>
+            <Chip className="justify-center" variant="soft" color={l.positive ? "success" : "warning"}>
+              {l.b}
+            </Chip>
           </div>
           <div className="evidence">
-            <div className="meter">
-              <motion.span
-                className={l.positive ? "positive" : ""}
-                initial={{ width: 0 }}
-                animate={{ width: `${l.strength * 100}%` }}
-                transition={{ duration: 0.8, delay: 0.4 + i * 0.15, ease }}
-              />
-            </div>
+            <Meter
+              aria-label={`${l.a} and ${l.b}`}
+              size="sm"
+              className="flex-1"
+              color={l.positive ? "success" : "warning"}
+              value={l.strength * 100}
+            >
+              <Meter.Track>
+                <Meter.Fill />
+              </Meter.Track>
+            </Meter>
             <span>{l.n}</span>
           </div>
         </Card>
       ))}
-      <Card className="note">
-        <Info size={16} strokeWidth={2.25} aria-hidden="true" />
-        <p>
-          These things <b>happened together</b>. That doesn't mean one caused
-          the other.
-        </p>
-      </Card>
+      <Note icon={Info}>
+        These things <b>happened together</b>. That doesn’t mean one caused the other.
+      </Note>
     </Screen>
   );
 }
 
-/* 05 · Reflect — Weekly overview */
+/* 06 · Reflect — Weekly overview */
 const stressWeek = [0.35, 0.8, 0.9, 0.85, 0.5, 0.3, 0.25];
 const days = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -515,7 +788,7 @@ function Weekly({ next }) {
   );
 }
 
-/* 06 · Learn — Pattern map */
+/* 07 · Learn — Pattern map */
 const rows = [
   { label: "Sleep", metric: "sleep", v: [5, 6, 4, 3, 5, 6, 6, 3, 2, 4, 5, 6] },
   { label: "Stress", metric: "stress", v: [3, 2, 4, 6, 3, 2, 2, 5, 6, 4, 3, 2] },
@@ -565,7 +838,8 @@ function Patterns({ next }) {
   );
 }
 
-/* 07 · Share — Prepare & share */
+/* ---------- Care: the patient's and the doctor's side of the same moment ---------- */
+
 // Settings-style rows: a coloured tile makes each category quick to find.
 const categories = [
   ["Sleep & stress trends", true, ChartLine, "var(--app-sleep)"],
@@ -574,9 +848,134 @@ const categories = [
   ["Voice transcripts", false, AudioLines, "var(--app-stress)"],
 ];
 
-function Share({ restart }) {
-  const [on, setOn] = useState(() => categories.map(([, v]) => v));
-  const [shared, setShared] = useState(false);
+// State both phones read and write, so an action on one side shows on the other.
+// access: none → shared → revoked. recording: idle → asked → on | declined → done.
+export const initialCare = {
+  on: categories.map(([, v]) => v),
+  access: "none",
+  kept: false,
+  recording: "idle",
+  notes: false,
+  results: false,
+};
+
+const visit = {
+  forDoctor:
+    "Sanne described three weeks of short sleep and evening work. Agreed to protect sleep and restart lunchtime runs.",
+  forPatient:
+    "You described three weeks of short sleep and evening work. You agreed to protect your sleep and restart lunchtime runs.",
+  goals: ["In bed by 23:00 on work nights", "Two lunchtime runs a week", "Check in again in 3 weeks"],
+};
+
+function Person({ initials, name, sub }) {
+  return (
+    <Card className="pro">
+      <Avatar>
+        <Avatar.Fallback>{initials}</Avatar.Fallback>
+      </Avatar>
+      <div>
+        <strong>{name}</strong>
+        <span>{sub}</span>
+      </div>
+    </Card>
+  );
+}
+
+// The shared categories, with a word at the end of each row for its status.
+function Scope({ on, words }) {
+  return (
+    <ul className="toggles setup-rows">
+      {categories.map(([label, , RowIcon, color], i) => (
+        <li key={label}>
+          <span className="toggle-label">
+            <span className="tile" style={{ background: color }}>
+              <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
+            </span>
+            {label}
+          </span>
+          <span className="row-value">{words[on[i] ? 0 : 1]}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Live recording, shown on both phones while the session is recorded.
+function Recorder({ caption }) {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setSeconds((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <Card className="recorder">
+      <div className="orb-wrap">
+        <motion.div
+          className="orb"
+          animate={{ scale: [1, 1.12, 1] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <span className="timer">
+          {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+        </span>
+      </div>
+      <div className="wave" aria-hidden="true">
+        {Array.from({ length: 24 }).map((_, i) => (
+          <motion.span
+            key={i}
+            animate={{ scaleY: [0.2, 0.4 + ((i * 37) % 60) / 100, 0.2] }}
+            transition={{ duration: 0.8, repeat: Infinity, delay: (i % 6) * 0.08 }}
+          />
+        ))}
+      </div>
+      <span className="rec-caption">
+        <i aria-hidden="true" />
+        {caption}
+      </span>
+    </Card>
+  );
+}
+
+function SessionNotes({ title, text }) {
+  return (
+    <>
+      <Card className="summary">
+        <span className="ai-label">
+          <Orb size={18} />
+          {title}
+        </span>
+        <p>{text}</p>
+      </Card>
+      <Card>
+        <Label icon={Target}>Goals</Label>
+        <ul className="facts">
+          {visit.goals.map((g) => (
+            <li key={g}>
+              <Check size={16} strokeWidth={2.5} color="var(--app-activity)" aria-hidden="true" />
+              {g}
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </>
+  );
+}
+
+function Notice({ icon: NoticeIcon, title, children }) {
+  return (
+    <Card className="notice">
+      <span className="notice-icon">
+        <NoticeIcon size={24} strokeWidth={2} aria-hidden="true" />
+      </span>
+      <strong>{title}</strong>
+      <p>{children}</p>
+    </Card>
+  );
+}
+
+/* 08 · Share — patient: prepare & share */
+function Share({ next, care, update }) {
+  const shared = care.access === "shared";
 
   return (
     <Screen
@@ -588,7 +987,7 @@ function Share({ restart }) {
             icon={Lock}
             onClick={() => {
               haptic();
-              setShared(true);
+              update({ access: "shared", kept: false });
             }}
           >
             Share securely
@@ -596,15 +995,9 @@ function Share({ restart }) {
         )
       }
     >
-      <Card className="pro">
-        <div className="avatar">LV</div>
-        <div>
-          <strong>L. Visser</strong>
-          <span>Therapist · next session Thu</span>
-        </div>
-      </Card>
+      <Person initials="LV" name="L. Visser" sub="GP · appointment today, 10:30" />
       <Card>
-        <span className="card-label">What they'll see</span>
+        <span className="card-label">What they’ll see</span>
         <ul className="toggles">
           {categories.map(([label, , RowIcon, color], i) => (
             <li key={label}>
@@ -614,27 +1007,22 @@ function Share({ restart }) {
                 </span>
                 {label}
               </span>
-              <button
-                role="switch"
-                aria-checked={on[i]}
-                aria-label={label}
-                className={`switch ${on[i] ? "on" : ""}`}
+              <Toggle
+                label={label}
+                on={care.on[i]}
                 disabled={shared}
-                onClick={() => {
+                onChange={() => {
                   haptic();
-                  setOn((s) => s.map((x, j) => (j === i ? !x : x)));
+                  update({ on: care.on.map((x, j) => (j === i ? !x : x)) });
                 }}
-              >
-                <motion.span layout transition={spring} />
-              </button>
+              />
             </li>
           ))}
         </ul>
       </Card>
-      <Card className="lock">
-        <Lock size={16} strokeWidth={2} aria-hidden="true" />
-        <p>End-to-end encrypted. They get a summary, never raw sensor data.</p>
-      </Card>
+      <Note icon={Lock} status="success">
+        End-to-end encrypted, in both directions. They get a summary, never raw sensor data.
+      </Note>
       <AnimatePresence initial={false}>
         {shared && (
           <motion.div
@@ -648,20 +1036,16 @@ function Share({ restart }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
           >
-            <p className="shared-msg">
-              <CircleCheck size={18} strokeWidth={2.25} aria-hidden="true" />
-              <span>
-                <b>Shared with L. Visser.</b> You can end access at any time.
-              </span>
-            </p>
-            <button className="app-danger" onClick={() => setShared(false)}>
-              <ShieldOff {...iconProps} />
+            <Note icon={CircleCheck} status="success" title="Shared with L. Visser">
+              You can end access at any time.
+            </Note>
+            <Danger icon={ShieldOff} onClick={() => update({ access: "none" })}>
               Revoke access
-            </button>
-            <button className="app-link" onClick={restart}>
-              <RotateCcw {...iconProps} />
-              Start the loop again
-            </button>
+            </Danger>
+            <Quiet onClick={next}>
+              Go to the appointment
+              <ArrowRight {...iconProps} />
+            </Quiet>
           </motion.div>
         )}
       </AnimatePresence>
@@ -669,4 +1053,423 @@ function Share({ restart }) {
   );
 }
 
-export const screens = [Today, Capture, Structure, Connect, Weekly, Patterns, Share];
+/* 08 · Share — doctor: the shared overview */
+function NoAccess({ revoked }) {
+  return revoked ? (
+    <Notice icon={ShieldOff} title="Access withdrawn">
+      The patient ended sharing. Their data is no longer visible to you.
+    </Notice>
+  ) : (
+    <Notice icon={Lock} title="Nothing shared yet">
+      The overview appears here once the patient shares it with you.
+    </Notice>
+  );
+}
+
+function Trend({ metric, name, dir, children }) {
+  const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[dir];
+  return (
+    <li>
+      <span className="trend-name">
+        <MetricIcon metric={metric} size={16} />
+        {name}
+      </span>
+      <span className={`delta ${dir}`}>
+        <DirIcon size={14} strokeWidth={2.5} aria-hidden="true" />
+        {children}
+      </span>
+    </li>
+  );
+}
+
+function DoctorOverview({ next, care }) {
+  const shared = care.access === "shared";
+  const [trends, mood, goals] = care.on;
+  const hidden = categories.filter((_, i) => !care.on[i]).map(([label]) => label);
+
+  return (
+    <Screen
+      eyebrow={shared ? "Shared overview · last 12 weeks" : "Patient"}
+      title="Sanne Koster"
+      action={shared && <Primary icon={ArrowRight} onClick={next}>Start the session</Primary>}
+    >
+      {!shared && <NoAccess revoked={care.access === "revoked"} />}
+      {shared && (
+        <>
+          {trends && (
+            <Card>
+              <div className="row-between">
+                <span className="card-label">Body</span>
+                <Tag kind="sensor">Sensor</Tag>
+              </div>
+              <ul className="facts trends">
+                <Trend metric="sleep" name="Sleep" dir="down">Lower</Trend>
+                <Trend metric="stress" name="Stress" dir="up">Higher</Trend>
+                <Trend metric="activity" name="Activity" dir="flat">Stable</Trend>
+              </ul>
+            </Card>
+          )}
+          {mood && (
+            <Card>
+              <div className="row-between">
+                <span className="card-label">Wellbeing</span>
+                <Tag kind="you">Patient reported</Tag>
+              </div>
+              <ul className="facts trends">
+                <Trend metric="mood" name="Mood" dir="flat">Stable</Trend>
+                <Trend metric="hrv" name="Energy" dir="down">Lower</Trend>
+              </ul>
+              <p className="card-foot">Work stress was mentioned more often.</p>
+            </Card>
+          )}
+          {(trends || mood) && (
+            <>
+              <Card className="pattern">
+                <Tag kind="neutral">Observed pattern</Tag>
+                <p>Shorter sleep frequently coincided with higher stress.</p>
+              </Card>
+              <Card className="pattern pos">
+                <Tag kind="pos">Positive pattern</Tag>
+                <p>Regular exercise frequently coincided with better reported mood.</p>
+              </Card>
+            </>
+          )}
+          {goals && (
+            <Card>
+              <Label icon={Target}>Goals</Label>
+              <div className="big-num sm">
+                2 <small>of 3 maintained</small>
+              </div>
+            </Card>
+          )}
+          <Card>
+            <span className="card-label">May want to discuss</span>
+            <div className="chips">
+              <Chip>Workload</Chip>
+              <Chip>Sleep consistency</Chip>
+              <Chip>Evening stress</Chip>
+            </div>
+          </Card>
+          {hidden.length > 0 && (
+            <Note icon={Lock}>Not shared by the patient: {hidden.join(", ")}.</Note>
+          )}
+        </>
+      )}
+    </Screen>
+  );
+}
+
+/* 09 · Talk — patient: the appointment */
+function PatientSession({ next, care, update }) {
+  const state = care.recording;
+  const actions = {
+    asked: (
+      <>
+        <Primary
+          icon={Mic}
+          onClick={() => {
+            haptic();
+            update({ recording: "on" });
+          }}
+        >
+          Allow recording
+        </Primary>
+        <Quiet onClick={() => update({ recording: "declined" })}>Not now</Quiet>
+      </>
+    ),
+    on: (
+      <Danger onClick={() => update({ recording: "done" })}>Stop recording</Danger>
+    ),
+    declined: <Primary icon={ArrowRight} onClick={next}>Manage sharing</Primary>,
+    done: care.notes && <Primary icon={ArrowRight} onClick={next}>Manage sharing</Primary>,
+  };
+
+  return (
+    <Screen eyebrow="Today, 10:30" title="Appointment" action={actions[state]}>
+      <Person initials="LV" name="L. Visser" sub="GP · in session now" />
+      {state === "idle" && (
+        <Note icon={ShieldCheck} status="success">
+          {care.access === "shared"
+            ? "L. Visser can see the overview you shared. Nothing is being recorded."
+            : "You haven’t shared an overview. Nothing is being recorded."}
+        </Note>
+      )}
+      {state === "asked" && (
+        <Card>
+          <Label icon={Mic}>Recording request</Label>
+          <p className="ask">L. Visser asks to record this session.</p>
+          <p className="card-foot">
+            The recording is for the doctor’s notes. You get the summary and AI notes afterwards.
+          </p>
+        </Card>
+      )}
+      {state === "on" && (
+        <>
+          <Recorder caption="Recording" />
+          <p className="hint">
+            <ShieldCheck size={13} strokeWidth={2.25} aria-hidden="true" />
+            Recording because you agreed. You can stop it.
+          </p>
+        </>
+      )}
+      {state === "declined" && (
+        <Note icon={ShieldCheck} status="success">
+          You chose not to record. Nothing is being recorded.
+        </Note>
+      )}
+      {state === "done" &&
+        (care.notes ? (
+          <SessionNotes title="Session summary" text={visit.forPatient} />
+        ) : (
+          <Card className="nudge">
+            <Orb size={36} />
+            <div>
+              <p>Recording ended</p>
+              <span>L. Visser can send you the summary and AI notes.</span>
+            </div>
+          </Card>
+        ))}
+    </Screen>
+  );
+}
+
+/* 09 · Talk — doctor: ask to record, then notes */
+function DoctorSession({ next, care, update }) {
+  const state = care.recording;
+  const actions = {
+    idle: (
+      <Primary icon={Mic} onClick={() => update({ recording: "asked" })}>
+        Ask to record
+      </Primary>
+    ),
+    asked: <Primary disabled>Waiting for consent…</Primary>,
+    on: (
+      <Primary icon={Check} onClick={() => update({ recording: "done" })}>
+        End session
+      </Primary>
+    ),
+    declined: <Primary icon={ArrowRight} onClick={next}>Continue</Primary>,
+    done: care.notes ? (
+      <Primary icon={ArrowRight} onClick={next}>Continue</Primary>
+    ) : (
+      <Primary
+        icon={Send}
+        onClick={() => {
+          haptic();
+          update({ notes: true });
+        }}
+      >
+        Send summary to Sanne
+      </Primary>
+    ),
+  };
+
+  return (
+    <Screen eyebrow="Today, 10:30" title="Session" action={actions[state]}>
+      <Person initials="SK" name="Sanne Koster" sub="34 · in session now" />
+      {state === "idle" && (
+        <Card>
+          <Label icon={Mic}>Record this session?</Label>
+          <p className="ask">Ask Sanne before you record.</p>
+          <p className="card-foot">
+            The recording is for your notes. The summary and AI notes can be shared with the patient.
+          </p>
+        </Card>
+      )}
+      {state === "asked" && (
+        <Card className="nudge">
+          <Orb size={36} />
+          <div>
+            <p>Request sent</p>
+            <span>Sanne sees it on their phone and decides.</span>
+          </div>
+        </Card>
+      )}
+      {state === "on" && (
+        <>
+          <Recorder caption="Recording with consent" />
+          <p className="hint">
+            <ShieldCheck size={13} strokeWidth={2.25} aria-hidden="true" />
+            The patient can stop the recording at any time.
+          </p>
+        </>
+      )}
+      {state === "declined" && (
+        <Note icon={ShieldCheck}>Sanne chose not to record. Take notes as usual.</Note>
+      )}
+      {state === "done" && (
+        <>
+          <SessionNotes title="AI notes" text={visit.forDoctor} />
+          {care.notes && (
+            <p className="hint">
+              <Lock size={13} strokeWidth={2.25} aria-hidden="true" />
+              Sent to Sanne, encrypted.
+            </p>
+          )}
+        </>
+      )}
+    </Screen>
+  );
+}
+
+/* 10 · Control — patient: keep sharing or revoke */
+function PatientAccess({ care, update, restart }) {
+  const shared = care.access === "shared";
+  const share = () => {
+    haptic();
+    update({ access: "shared", kept: false });
+  };
+  const revoke = () => {
+    haptic();
+    update({ access: "revoked", kept: false });
+  };
+
+  return (
+    <Screen
+      eyebrow="Care · Sharing & privacy"
+      title="Your sharing"
+      action={
+        shared && !care.kept ? (
+          <>
+            <Primary icon={ShieldCheck} onClick={() => update({ kept: true })}>
+              Keep sharing
+            </Primary>
+            <Quiet danger onClick={revoke}>
+              Revoke access
+            </Quiet>
+          </>
+        ) : (
+          !shared && <Primary icon={Lock} onClick={share}>Share again</Primary>
+        )
+      }
+    >
+      <Person
+        initials="LV"
+        name="L. Visser"
+        sub={shared ? "GP · has access since today" : "GP · no access"}
+      />
+      {shared ? (
+        <Card>
+          <span className="card-label">What they can see</span>
+          <Scope on={care.on} words={["Shared", "Hidden"]} />
+        </Card>
+      ) : (
+        <Notice icon={ShieldOff} title={care.access === "revoked" ? "Access ended" : "Not sharing"}>
+          L. Visser can’t see your data. Summaries and results they sent stay with you.
+        </Notice>
+      )}
+      {(care.notes || care.results) && (
+        <Card>
+          <span className="card-label">From L. Visser</span>
+          <ul className="facts">
+            {care.notes && (
+              <li>
+                <FileText size={16} strokeWidth={2.25} color="var(--accent)" aria-hidden="true" />
+                Session summary · today
+              </li>
+            )}
+            {care.results && (
+              <li>
+                <FlaskConical size={16} strokeWidth={2.25} color="var(--app-heart)" aria-hidden="true" />
+                Blood test results · today
+              </li>
+            )}
+          </ul>
+        </Card>
+      )}
+      {shared && care.kept && (
+        <div className="shared-state">
+          <Note icon={CircleCheck} status="success" title="Still sharing with L. Visser">
+            You can change this at any time.
+          </Note>
+          <Danger icon={ShieldOff} onClick={revoke}>
+            Revoke access
+          </Danger>
+        </div>
+      )}
+      {(care.kept || !shared) && (
+        <Quiet onClick={restart}>
+          <RotateCcw {...iconProps} />
+          Start the loop again
+        </Quiet>
+      )}
+    </Screen>
+  );
+}
+
+/* 10 · Control — doctor: access lasts until the patient withdraws it */
+function DoctorAccess({ care, update }) {
+  const shared = care.access === "shared";
+  const outbox = [
+    ["Session summary", FileText, "var(--accent)", "notes"],
+    ["Blood test results", FlaskConical, "var(--app-heart)", "results"],
+  ];
+
+  return (
+    <Screen eyebrow="Patient record" title="Sanne Koster">
+      {shared ? (
+        <>
+          <Note icon={ShieldCheck} status="success">
+            Access granted by the patient. It lasts until they withdraw consent.
+          </Note>
+          <Card>
+            <span className="card-label">Visible to you</span>
+            <Scope on={care.on} words={["Visible", "Not shared"]} />
+          </Card>
+          <Card>
+            <span className="card-label">Send to the patient</span>
+            <ul className="toggles setup-rows">
+              {outbox.map(([label, RowIcon, color, key]) => (
+                <li key={key}>
+                  <span className="toggle-label">
+                    <span className="tile" style={{ background: color }}>
+                      <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
+                    </span>
+                    {label}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant={care[key] ? "tertiary" : "secondary"}
+                    isDisabled={care[key]}
+                    aria-label={`Send ${label}`}
+                    onPress={() => {
+                      haptic();
+                      update({ [key]: true });
+                    }}
+                  >
+                    {care[key] && <Check size={14} strokeWidth={2.75} aria-hidden="true" />}
+                    {care[key] ? "Sent" : "Send"}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </>
+      ) : (
+        <>
+          <NoAccess revoked={care.access === "revoked"} />
+          <Note icon={Info}>
+            You can’t send or view data without access. Your own session notes stay in your records.
+          </Note>
+        </>
+      )}
+    </Screen>
+  );
+}
+
+export const screens = [
+  Onboarding,
+  Today,
+  Capture,
+  Structure,
+  Connect,
+  Weekly,
+  Patterns,
+  Share,
+  PatientSession,
+  PatientAccess,
+];
+
+// The doctor's phone joins at the Share step and mirrors each step after it.
+export const DOCTOR_FROM = screens.indexOf(Share);
+export const doctorScreens = [DoctorOverview, DoctorSession, DoctorAccess];

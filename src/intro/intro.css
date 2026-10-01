@@ -1,0 +1,385 @@
+/* ---------- Intro scenes: the app's card language, on the page ---------- */
+
+.intro {
+  --late: #ff9500;
+  --early: #34c759;
+
+  /* Type scale: every size in the intro comes from these four. */
+  --text-caption: 13px;
+  --text-body-sm: 15px;
+  --text-body: 17px;
+  --text-display: clamp(34px, 6vw, 48px);
+
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--sans);
+}
+
+.intro-head {
+  padding: 0 4px 12px;
+}
+
+.intro-eyebrow,
+.intro-label {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.intro-head h1 {
+  margin-top: 4px;
+  font-size: var(--text-display);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.intro-head p {
+  margin-top: 10px;
+  max-width: 52ch;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.intro-grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .intro-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.intro-card h2 {
+  margin-top: 14px;
+  font-size: var(--text-body);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.intro-card p {
+  margin-top: 4px;
+  font-size: var(--text-body-sm);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ---------- Scene 1 visuals ---------- */
+
+.viz {
+  display: grid;
+  place-items: center;
+  height: 220px;
+  padding: 24px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--k) 10%, transparent);
+  color: var(--k);
+}
+
+.viz-spark {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+}
+
+.viz-spark svg {
+  display: block;
+  width: 100%;
+}
+
+.viz-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.viz-dot {
+  fill: var(--surface);
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.viz-bubble {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  translate: -50% 0;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--k);
+  color: #fff;
+  font-size: var(--text-body);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.viz-weeks {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.viz-weeks div {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 7px;
+}
+
+.viz-weeks i {
+  aspect-ratio: 1;
+  border-radius: 7px;
+  border: 2px dashed color-mix(in srgb, var(--k) 45%, transparent);
+}
+
+.viz-weeks i.now {
+  border: 0;
+  background: var(--k);
+}
+
+.viz-weeks span {
+  justify-self: end;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.viz-memory {
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.viz-quote {
+  padding: 12px 18px;
+  border-radius: 22px 22px 22px 6px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: var(--text-body);
+  font-style: italic;
+  line-height: 1.3;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.viz-fade {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 340px;
+}
+
+.viz-fade i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--k);
+}
+
+.viz-places {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.viz-place {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: 112px;
+}
+
+.viz-node {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--k);
+  color: #fff;
+}
+
+.viz-place em {
+  font-style: normal;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* A dashed line that stops short of both neighbours. */
+.viz-gap {
+  position: absolute;
+  top: 35px;
+  left: -12px;
+  width: 24px;
+  border-top: 3px dashed color-mix(in srgb, var(--k) 45%, transparent);
+}
+
+/* ---------- Scene 2 ---------- */
+
+.curve svg {
+  display: block;
+  width: 100%;
+}
+
+.curve path {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.curve-late {
+  stroke: var(--late);
+}
+
+.curve-early {
+  stroke: var(--early);
+}
+
+.curve-dot {
+  fill: var(--surface);
+  stroke: var(--early);
+  stroke-width: 4;
+}
+
+.curve-axis {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.curve-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: 12px;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.curve-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-wrap: pretty;
+}
+
+.curve-legend i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--late);
+}
+
+.curve-legend .early i {
+  background: var(--early);
+}
+
+/* Settings-style rows, as on the app's share screen. */
+.benefits {
+  list-style: none;
+  margin: 4px 0 -8px;
+  padding: 0;
+}
+
+.benefits li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 0;
+  font-size: var(--text-body);
+  line-height: 1.4;
+}
+
+.benefits li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 56px;
+  right: 0;
+  height: 1px;
+  background: var(--border);
+}
+
+.benefits .tile {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 12px;
+}
+
+.benefit-label {
+  flex: 1;
+  text-wrap: pretty;
+}
+
+/* ---------- Navigation ---------- */
+
+.intro-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.intro-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.intro-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+}
+
+.intro-dots span.on {
+  width: 20px;
+  background: var(--accent);
+}
+
+/* Way back to the intro from the prototype. */
+.proto-back {
+  position: fixed;
+  z-index: 10;
+  top: 12px;
+  left: 16px;
+}
+
+/* Apple's touch metrics: a 50pt main action with a 17pt label, 50pt round back. */
+.intro-nav .button--lg {
+  height: 50px;
+  padding-inline: 24px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.intro-nav .button--icon-only.button--lg {
+  width: 50px;
+  padding: 0;
+}

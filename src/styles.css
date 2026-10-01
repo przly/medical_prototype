@@ -1,10 +1,9 @@
-:root {
-  --bg: #f6f3ee;
-  --surface: #fffdfa;
-  --ink: #1d2320;
-  --muted: #5d6661;
-  --line: #e3ddd3;
+@import "tailwindcss";
+@import "@heroui/styles";
 
+/* Colours, radii and component styles come from HeroUI's default theme.
+   Only the layer colours for the story steps are our own. */
+:root {
   --body: #2f7d6d;
   --body-soft: #e0efea;
   --context: #c27a2c;
@@ -14,26 +13,18 @@
   --ai: #1d2320;
   --ai-soft: #e9e7e2;
 
-  --radius: 18px;
   --sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #121614;
-    --surface: #1a201d;
-    --ink: #ecefe9;
-    --muted: #9ba49f;
-    --line: #2b3330;
-    --body: #5fbfa9;
-    --body-soft: #1d3530;
-    --context: #e3a45e;
-    --context-soft: #3a2b1b;
-    --care: #a79ae0;
-    --care-soft: #2a2640;
-    --ai: #ecefe9;
-    --ai-soft: #2a302d;
-  }
+[data-theme="dark"] {
+  --body: #5fbfa9;
+  --body-soft: #1d3530;
+  --context: #e3a45e;
+  --context-soft: #3a2b1b;
+  --care: #a79ae0;
+  --care-soft: #2a2640;
+  --ai: #ecefe9;
+  --ai-soft: #2a302d;
 }
 
 *,
@@ -48,12 +39,13 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--ink);
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--sans);
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
@@ -88,8 +80,18 @@ em {
   padding-bottom: 48px;
 }
 
+/* The prototype needs room for two phones side by side. */
+.page-wide {
+  max-width: 1440px;
+}
+
 /* Layer colors for the steps */
 .layer-body { --c: var(--body); --c-soft: var(--body-soft); }
 .layer-context { --c: var(--context); --c-soft: var(--context-soft); }
 .layer-care { --c: var(--care); --c-soft: var(--care-soft); }
 .layer-ai { --c: var(--ai); --c-soft: var(--ai-soft); }
+
+/* Cards sit flat on the page: no shadow. */
+.card {
+  box-shadow: none;
+}

@@ -1,20 +1,29 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Button, Tabs } from "@heroui/react";
+import { ArrowLeft } from "lucide-react";
 import Icon from "../Icon.jsx";
 import { steps } from "../content.js";
-import { screens, spring } from "./screens.jsx";
+import { DOCTOR_FROM, doctorScreens, initialCare, screens, spring } from "./screens.jsx";
 import "./prototype.css";
 
 const ease = [0.22, 1, 0.36, 1];
 
 // App tabs from the information architecture, and which step each one opens.
 const tabs = [
-  { label: "Today", icon: "pulse", step: 0, owns: [0] },
-  { label: "Reflect", icon: "mic", step: 1, owns: [1, 2] },
-  { label: "Insights", icon: "map", step: 4, owns: [3, 4, 5] },
-  { label: "Care", icon: "shield", step: 6, owns: [6] },
+  { label: "Today", icon: "pulse", step: 1, owns: [1] },
+  { label: "Reflect", icon: "mic", step: 2, owns: [2, 3] },
+  { label: "Insights", icon: "map", step: 5, owns: [4, 5, 6] },
+  { label: "Care", icon: "shield", step: 7, owns: [7, 8, 9] },
 ];
+
+// The doctor's app has one tab per shared step.
+const doctorTabs = [
+  { label: "Overview", icon: "map", step: 7, owns: [7] },
+  { label: "Session", icon: "chat", step: 8, owns: [8] },
+  { label: "Access", icon: "key", step: 9, owns: [9] },
+];
+const DOCTOR_TINT = "#007aff";
 
 // Where a flick would come to rest, using Apple's scroll deceleration.
 const project = (velocity, rate = 0.998) => ((velocity / 1000) * rate) / (1 - rate);
@@ -82,21 +91,23 @@ function StatusBar() {
 // iOS system colours: green, orange, indigo, purple.
 const tints = { body: "#34c759", context: "#ff9500", ai: "#5856d6", care: "#af52de" };
 
-function Phone({ active, dir, go }) {
-  const ScreenComponent = screens[active];
-  const first = active === 0;
-  const last = active === screens.length - 1;
+// One device. The patient's and the doctor's phones differ only in what they're given.
+function Phone({ className = "", screens, offset = 0, tabs, hideTabs, tint, active, dir, go, min, max, screenProps }) {
+  const ScreenComponent = screens[active - offset];
+  const first = active === min;
+  const last = active === max;
 
-  const onDragEnd = (_, { offset, velocity }) => {
+  const onDragEnd = (_, { offset: drag, velocity }) => {
     const width = 393;
-    const landing = offset.x + project(velocity.x);
+    const landing = drag.x + project(velocity.x);
     if (landing < -width / 3 && !last) go(active + 1);
     else if (landing > width / 3 && !first) go(active - 1);
   };
 
   return (
-    <div className="phone">
-      <div className="phone-screen" style={{ "--tint": tints[steps[active].layer] }}>
+    // The app inside the phone stays light whatever the page theme.
+    <div className={`phone ${className}`} data-theme="light">
+      <div className="phone-screen" style={{ "--tint": tint }}>
         <StatusBar />
         <div className="viewport">
           <AnimatePresence initial={false} custom={dir} mode="popLayout">
@@ -117,28 +128,39 @@ function Phone({ active, dir, go }) {
               dragTransition={{ bounceStiffness: 400, bounceDamping: 40 }}
               onDragEnd={onDragEnd}
             >
-              <ScreenComponent next={() => go(active + 1)} restart={() => go(0)} />
+              <ScreenComponent next={() => go(active + 1)} {...screenProps} />
             </motion.div>
           </AnimatePresence>
         </div>
-        <nav className="tabbar" aria-label="App sections">
-          {tabs.map((t) => {
-            const on = t.owns.includes(active);
-            return (
-              <button
-                key={t.label}
-                className={on ? "on" : ""}
-                onClick={() => go(t.step)}
-                aria-current={on ? "page" : undefined}
+        {/* Onboarding runs full screen; the tab bar arrives with the app itself. */}
+        <AnimatePresence initial={false}>
+          {!hideTabs && (
+            <motion.div
+              className="tabbar"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 24 }}
+              transition={spring}
+            >
+              <Tabs
+                selectedKey={tabs.find((t) => t.owns.includes(active))?.label}
+                onSelectionChange={(label) => go(tabs.find((t) => t.label === label).step)}
               >
-                {/* The selection lens glides between tabs, as in iOS 26/27. */}
-                {on && <motion.span layoutId="tab-lens" className="tab-lens" transition={spring} />}
-                <Icon name={t.icon} size={24} />
-                <span>{t.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+                <Tabs.ListContainer>
+                  <Tabs.List aria-label="App sections">
+                    {tabs.map((t) => (
+                      <Tabs.Tab key={t.label} id={t.label} className="h-auto flex-col gap-0.5 py-1.5 text-xs">
+                        <Icon name={t.icon} size={22} />
+                        {t.label}
+                        <Tabs.Indicator />
+                      </Tabs.Tab>
+                    ))}
+                  </Tabs.List>
+                </Tabs.ListContainer>
+              </Tabs>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <span className="home-indicator" aria-hidden="true" />
       </div>
     </div>
@@ -149,26 +171,36 @@ function Phone({ active, dir, go }) {
 // iPhone 16 Pro: a 393×852pt screen inside a 12pt bezel.
 const PHONE_W = 417;
 const PHONE_H = 876;
+const PHONE_GAP = 24;
+// Below this width the layout stacks and shows one phone at a time.
+const WIDE = 960;
 
-function useFitScale() {
-  // Leaves the page's vertical padding (2 × 48px) and side gutters free.
-  const measure = () => {
+function useViewport() {
+  const read = () => {
     const { clientWidth, clientHeight } = document.documentElement;
-    const byHeight = (clientHeight - 96) / PHONE_H;
-    const byWidth = (clientWidth - 32) / PHONE_W;
-    return Math.min(byHeight, byWidth, 1.5);
+    return { w: clientWidth, h: clientHeight };
   };
-  const [scale, setScale] = useState(measure);
+  const [size, setSize] = useState(read);
   useEffect(() => {
-    const onResize = () => setScale(measure());
+    const onResize = () => setSize(read());
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
-  return scale;
+  return size;
 }
 
-export default function LoopPrototype() {
-  const scale = useFitScale();
+// Leaves the page's vertical padding (2 × 48px) and the step bar free and, on
+// wide screens, room for the explanation beside the phones.
+function fitScale({ w, h }, phones) {
+  const labels = phones > 1 ? 40 : 0;
+  const byHeight = (h - 96 - 72 - labels) / PHONE_H;
+  const room = w >= WIDE ? Math.min(w, 1440) - 32 - 80 - 280 : w - 32;
+  const byWidth = (room - PHONE_GAP * (phones - 1)) / (PHONE_W * phones);
+  return Math.max(0.3, Math.min(byHeight, byWidth, 1.5));
+}
+
+export default function LoopPrototype({ onBack }) {
+  const viewport = useViewport();
   const [[active, dir], setState] = useState([0, 1]);
   const go = (i) => {
     const next = Math.max(0, Math.min(steps.length - 1, i));
@@ -176,36 +208,69 @@ export default function LoopPrototype() {
   };
   const step = steps[active];
 
-  // Keep the active step visible when the list scrolls sideways on mobile.
-  const listRef = useRef(null);
-  useEffect(() => {
-    const list = listRef.current;
-    const el = list?.children[active];
-    if (!list || !el || list.scrollWidth <= list.clientWidth) return;
-    list.scrollTo({
-      left: el.offsetLeft - (list.clientWidth - el.offsetWidth) / 2,
-      behavior: "smooth",
-    });
-  }, [active]);
+  // What the patient and the doctor do to the same record.
+  const [care, setCare] = useState(initialCare);
+  const update = (patch) => setCare((c) => ({ ...c, ...patch }));
+  const restart = () => {
+    setCare(initialCare);
+    go(1);
+  };
+  const screenProps = { care, update, restart };
+
+  // From the Share step on there are two perspectives: side by side when there
+  // is room, otherwise one at a time behind a switch.
+  const dual = active >= DOCTOR_FROM;
+  const both = dual && viewport.w >= WIDE;
+  const [view, setView] = useState("patient");
+  const showDoctor = dual && (both || view === "doctor");
+  const showPatient = !dual || both || view === "patient";
+  const scale = fitScale(viewport, both ? 2 : 1);
+  const slot = {
+    in: { opacity: 1, width: PHONE_W * scale, height: PHONE_H * scale },
+    out: { opacity: 0, width: 0, height: PHONE_H * scale },
+  };
 
   const tint = tints[step.layer];
 
+  // Steps are as wide as their labels, so the active one is measured: the row
+  // shifts until it is centred and the highlight takes its width.
+  const trackRef = useRef(null);
+  const [pill, setPill] = useState(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = trackRef.current?.children[active];
+      if (el) setPill({ x: -(el.offsetLeft + el.offsetWidth / 2), width: el.offsetWidth });
+    };
+    measure();
+    // Label widths change once the web font arrives.
+    document.fonts?.ready.then(measure);
+  }, [active]);
+  const slide = pill ? spring : { duration: 0 };
+
   return (
     <div className="proto">
-      <div className="ambient" aria-hidden="true">
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={tint}
-            className="ambient-glow"
-            style={{ "--glow": tint }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          />
-        </AnimatePresence>
-      </div>
-      <ol ref={listRef} className="proto-steps" role="tablist" aria-label="Core loop steps">
+      <Button className="proto-back" size="sm" variant="outline" onPress={onBack}>
+        <ArrowLeft size={16} strokeWidth={2.25} aria-hidden="true" />
+        Context
+      </Button>
+      {/* Step carousel: every step is shown, the active one stays in the middle
+          and the row slides under a highlight that hugs it. */}
+      <div className="proto-steps">
+        <motion.span
+          className="proto-step-bg"
+          initial={false}
+          animate={{ width: pill?.width ?? 0 }}
+          transition={slide}
+        />
+        <motion.ol
+          ref={trackRef}
+          className="proto-track"
+          role="tablist"
+          aria-label="Core loop steps"
+          initial={false}
+          animate={{ x: pill?.x ?? 0 }}
+          transition={slide}
+        >
         {steps.map((s, i) => {
           const on = i === active;
           return (
@@ -216,13 +281,6 @@ export default function LoopPrototype() {
                 className={`proto-step layer-${s.layer} ${on ? "on" : ""}`}
                 onClick={() => go(i)}
               >
-                {on && (
-                  <motion.span
-                    layoutId="proto-active"
-                    className="proto-step-bg"
-                    transition={spring}
-                  />
-                )}
                 <span className="proto-node">
                   <Icon name={s.icon} size={18} />
                 </span>
@@ -234,15 +292,80 @@ export default function LoopPrototype() {
             </li>
           );
         })}
-      </ol>
+        </motion.ol>
+      </div>
 
-      <div
-        className="proto-stage"
-        style={{ width: PHONE_W * scale, height: PHONE_H * scale, "--scale": scale }}
-      >
+      {dual && !both && (
+        <Tabs className="view-toggle" selectedKey={view} onSelectionChange={setView}>
+          <Tabs.ListContainer>
+            <Tabs.List aria-label="Perspective">
+              <Tabs.Tab id="patient">
+                Patient
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id="doctor">
+                Doctor
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
+      )}
+
+      <div className={`proto-stage ${both ? "dual" : ""}`} style={{ "--scale": scale }}>
         {/* Map pointer positions into the phone's unscaled space so drags stay 1:1. */}
         <MotionConfig transformPagePoint={(p) => ({ x: p.x / scale, y: p.y / scale })}>
-          <Phone active={active} dir={dir} go={go} />
+          <AnimatePresence initial={false}>
+            {showPatient && (
+              <motion.div
+                key="patient"
+                className="phone-slot"
+                initial={slot.out}
+                animate={slot.in}
+                exit={slot.out}
+                transition={spring}
+              >
+                {both && <span className="phone-role role-patient">Patient</span>}
+                <Phone
+                  screens={screens}
+                  tabs={tabs}
+                  hideTabs={active === 0}
+                  tint={tint}
+                  active={active}
+                  dir={dir}
+                  go={go}
+                  min={0}
+                  max={steps.length - 1}
+                  screenProps={screenProps}
+                />
+              </motion.div>
+            )}
+            {showDoctor && (
+              <motion.div
+                key="doctor"
+                className="phone-slot"
+                initial={slot.out}
+                animate={slot.in}
+                exit={slot.out}
+                transition={spring}
+              >
+                {both && <span className="phone-role role-doctor">Doctor</span>}
+                <Phone
+                  screens={doctorScreens}
+                  offset={DOCTOR_FROM}
+                  tabs={doctorTabs}
+                  tint={DOCTOR_TINT}
+                  // Stays on its first screen while it slides away.
+                  active={Math.max(active, DOCTOR_FROM)}
+                  dir={dir}
+                  go={go}
+                  min={DOCTOR_FROM}
+                  max={steps.length - 1}
+                  screenProps={screenProps}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </MotionConfig>
       </div>
 
@@ -255,32 +378,18 @@ export default function LoopPrototype() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease }}
           >
-            <span className="proto-num">
-              Step {active + 1} of {steps.length}
-            </span>
-            <h3>{step.verb}</h3>
-            <p>{step.text}</p>
-            <span className="step-detail">{step.detail}</span>
+            <span className="proto-num">{step.when}</span>
+            <h3>{step.title}</h3>
+            {step.story.map((para) => (
+              <p key={para}>{para}</p>
+            ))}
           </motion.div>
         </AnimatePresence>
-        <div className="proto-nav">
-          <button onClick={() => go(active - 1)} disabled={active === 0} aria-label="Previous step">
-            <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
-          </button>
-          <div className="proto-dots" aria-hidden="true">
-            {steps.map((s, i) => (
-              <span key={s.verb} className={i === active ? "on" : ""} />
-            ))}
-          </div>
-          <button
-            onClick={() => go(active + 1)}
-            disabled={active === steps.length - 1}
-            aria-label="Next step"
-          >
-            <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-          </button>
-        </div>
-        <p className="proto-hint">Tap the buttons inside the phone to move through the flow.</p>
+        <p className="proto-hint">
+          {dual
+            ? "Both phones are live: what the patient does shows up on the doctor’s side, and the other way round."
+            : "Tap the buttons inside the phone to move through the flow."}
+        </p>
       </div>
     </div>
   );
