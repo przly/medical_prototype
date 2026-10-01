@@ -1,0 +1,95 @@
+:root {
+  --bg: #f6f3ee;
+  --surface: #fffdfa;
+  --ink: #1d2320;
+  --muted: #5d6661;
+  --line: #e3ddd3;
+
+  --body: #2f7d6d;
+  --body-soft: #e0efea;
+  --context: #c27a2c;
+  --context-soft: #f7ead9;
+  --care: #6b5ca5;
+  --care-soft: #ebe7f5;
+  --ai: #1d2320;
+  --ai-soft: #e9e7e2;
+
+  --radius: 18px;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121614;
+    --surface: #1a201d;
+    --ink: #ecefe9;
+    --muted: #9ba49f;
+    --line: #2b3330;
+    --body: #5fbfa9;
+    --body-soft: #1d3530;
+    --context: #e3a45e;
+    --context-soft: #3a2b1b;
+    --care: #a79ae0;
+    --care-soft: #2a2640;
+    --ai: #ecefe9;
+    --ai-soft: #2a302d;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+em {
+  font-style: italic;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 16px 96px;
+}
+
+/* ---------- Page ---------- */
+
+.page-proto {
+  display: grid;
+  align-content: center;
+  min-height: 100vh;
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+/* Layer colors for the steps */
+.layer-body { --c: var(--body); --c-soft: var(--body-soft); }
+.layer-context { --c: var(--context); --c-soft: var(--context-soft); }
+.layer-care { --c: var(--care); --c-soft: var(--care-soft); }
+.layer-ai { --c: var(--ai); --c-soft: var(--ai-soft); }
