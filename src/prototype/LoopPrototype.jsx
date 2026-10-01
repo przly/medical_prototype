@@ -15,7 +15,7 @@ const ease = [0.22, 1, 0.36, 1];
 // App tabs from the information architecture, and which step each one opens.
 const tabs = [
   { label: "Today", icon: "pulse", step: 1, owns: [1] },
-  { label: "Reflect", icon: "mic", step: 2, owns: [2, 3] },
+  { label: "Logs", icon: "mic", step: 2, owns: [2, 3] },
   { label: "Insights", icon: "map", step: 5, owns: [4, 5, 6] },
   { label: "Care", icon: "shield", step: 7, owns: [7, 8, 9] },
 ];

@@ -548,20 +548,22 @@
   transform-origin: left center;
 }
 
-/* Pinned action above the floating tab bar, with a soft fade so content
-   scrolling beneath it doesn't clash with the button. */
+/* Pinned action above the floating tab bar. Content fades out as it scrolls
+   under the button, and the backdrop runs solid to the bottom of the screen,
+   so no card edges show around the tab bar. */
 .screen-action {
   position: absolute;
   z-index: 2;
   left: 0;
   right: 0;
-  bottom: 87px;
+  bottom: 0;
   display: grid;
   gap: 4px;
-  padding: 20px 16px 12px;
+  /* 87px clears the tab bar below the button. */
+  padding: 20px 16px 99px;
   background: linear-gradient(
     color-mix(in srgb, var(--background) 0%, transparent),
-    var(--background) 45%
+    var(--background) 36px
   );
 }
 
@@ -663,7 +665,7 @@
 
 /* No tab bar yet, so the pinned action sits at the bottom of the screen. */
 .screen-full .screen-action {
-  bottom: 21px;
+  padding-bottom: 33px;
 }
 
 /* 6px between the title and the intro text: the column's 16px gap, less 10. */
@@ -753,9 +755,12 @@
 
 .path-heading > span:last-child {
   font-family: var(--rounded);
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  color: var(--app-heart);
+  white-space: nowrap;
+  color: inherit;
 }
 
 /* Three tones of the heart colour: a deeper band, the colour itself, a lighter one. */
@@ -905,12 +910,15 @@
   margin-top: 12px;
 }
 
+.metric-detail .big-num {
+  font-size: 44px;
+  line-height: 1;
+}
+
 .status-normal {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: block;
   margin-top: 5px;
-  color: var(--app-positive);
+  color: var(--muted);
   font-size: 13px;
 }
 
@@ -988,7 +996,7 @@
   white-space: nowrap;
 }
 
-.src-tag.sensor { background: var(--app-fill); color: var(--muted); }
+.src-tag.sensor, .src-tag.airpods { background: var(--app-fill); color: var(--muted); }
 .src-tag.you { background: var(--context-soft); color: var(--context); }
 .src-tag.pos { background: var(--body-soft); color: var(--app-positive); }
 .src-tag.neutral { background: var(--app-fill); color: var(--muted); }
@@ -1093,6 +1101,10 @@
   background: var(--accent);
 }
 
+.transcript-card .card-label {
+  color: var(--brand);
+}
+
 .transcript {
   margin-top: 6px;
   min-height: 88px;
@@ -1191,6 +1203,72 @@
 
 .facts svg {
   flex: none;
+}
+
+/* Sensor readings: name over its change, a small chart, then the value. */
+.readings {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 17px;
+}
+
+.readings li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--separator);
+}
+
+.readings li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.readings svg {
+  flex: none;
+}
+
+.reading-name {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.readings .trend-name {
+  font-weight: 600;
+}
+
+.reading-value {
+  justify-self: end;
+  font-family: var(--rounded);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.baseline-spark {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.baseline-spark-base {
+  stroke: #c8c7ca;
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.baseline-spark-line {
+  fill: none;
+  stroke: #898b8c;
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 /* ---------- Connect ---------- */

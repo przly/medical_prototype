@@ -47,7 +47,7 @@ import {
   Waypoints,
   Zap,
 } from "lucide-react";
-import { DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
+import { BaselineSpark, DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
 import appleHealthIcon from "../assets/apps/apple-health.jpg";
 import profileImage from "../assets/avatars/annie.jpg";
 import doctorImage from "../assets/avatars/doctor.jpg";
@@ -375,7 +375,7 @@ function MetricTile({ metric, value, unit, values, status }) {
 }
 
 // Tags say where a piece of information came from.
-const tagIcons = { sensor: Watch, you: User, pos: Sprout, neutral: Repeat };
+const tagIcons = { sensor: Watch, you: User, pos: Sprout, neutral: Repeat, airpods: Headphones };
 
 function Tag({ kind, children }) {
   const TagIcon = tagIcons[kind];
@@ -670,11 +670,10 @@ function Today({ next }) {
         <div className="metric-detail-row">
           <div>
             <div className="big-num">57 <small>bpm</small></div>
-            <span className="status-normal"><CircleCheck size={14} aria-hidden="true" />Within range</span>
+            <span className="status-normal">Within range</span>
           </div>
           <DotSpark values={hr} label="Resting heart rate trend" />
         </div>
-        <p className="card-foot">Within your usual range this week.</p>
       </Card>
     </Screen>
   );
@@ -696,7 +695,7 @@ function Capture({ next }) {
     return () => clearTimeout(t);
   }, [shown, done]);
 
-  const seconds = Math.round((shown / words.length) * 18);
+  const seconds = Math.round((shown / words.length) * 20);
 
   // Move on after the confirmation, unless the user has already left this screen.
   const advance = useRef(null);
@@ -710,11 +709,11 @@ function Capture({ next }) {
 
   return (
     <Screen
-      eyebrow="AirPods · Listening"
       title="Log a thought"
+      trailing={<Tag kind="airpods">AirPods</Tag>}
       action={
         <Primary icon={saved || done ? Check : Mic} onClick={save} disabled={!done || saved}>
-          {saved ? "Saved" : done ? "Save reflection" : "Listening…"}
+          {saved ? "Saved" : done ? "Save thought" : "Listening…"}
         </Primary>
       }
     >
@@ -733,7 +732,7 @@ function Capture({ next }) {
           ))}
         </div>
       </Card>
-      <Card>
+      <Card className="transcript-card">
         <Label icon={AudioLines}>Transcript</Label>
         <p className="transcript">
           {words.slice(0, shown).join(" ")}
@@ -755,7 +754,7 @@ function Capture({ next }) {
             transition={spring}
           >
             <Check {...iconProps} />
-            Reflection saved · 18 sec · Today, 16:42
+            Log saved · 20 sec · Today, 16:42
           </motion.div>
         )}
       </AnimatePresence>
@@ -763,12 +762,40 @@ function Capture({ next }) {
   );
 }
 
-/* 04 · Structure — Reflection detail */
+// One sensor reading: how it sits against the baseline, a small chart of the
+// recent readings drifting from it, and the value now.
+function Reading({ metric, name, value, dir, values, baseline, band, children }) {
+  const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[dir];
+  return (
+    <li>
+      <span className="reading-name">
+        <span className="trend-name">
+          <MetricIcon metric={metric} size={16} />
+          {name}
+        </span>
+        <span className={`delta ${dir}`}>
+          <DirIcon size={14} strokeWidth={2.5} aria-hidden="true" />
+          {children}
+        </span>
+      </span>
+      <BaselineSpark
+        values={values}
+        baseline={baseline}
+        band={band}
+        color={metrics[metric].color}
+        label={`${name}: recent readings against your baseline`}
+      />
+      <strong className="reading-value">{value}</strong>
+    </li>
+  );
+}
+
+/* 04 · Structure — Log detail */
 function Structure({ next }) {
   return (
     <Screen
-      eyebrow="Today, 16:42 · 18 sec"
-      title="Reflection"
+      eyebrow="Today, 16:42 · 20 sec"
+      title="Log"
       action={<Primary icon={Waypoints} onClick={next}>See connections</Primary>}
     >
       <Card>
@@ -797,10 +824,24 @@ function Structure({ next }) {
           <span className="card-label">Around the same time</span>
           <Tag kind="sensor">Sensor</Tag>
         </div>
-        <ul className="facts">
-          <li><MetricIcon metric="stress" size={16} />Higher stress than usual</li>
-          <li><MetricIcon metric="sleep" size={16} />Poor sleep last night · 5h 12m</li>
+        <ul className="readings">
+          <Reading metric="stress" name="Stress" value="High" dir="up" baseline={35} band={10} values={[33, 38, 34, 40, 52, 68]}>
+            Higher than usual
+          </Reading>
+          <Reading metric="heart" name="Heart rate" value="74 bpm" dir="up" baseline={57} band={4} values={[58, 60, 57, 62, 68, 74]}>
+            17 above resting
+          </Reading>
+          <Reading metric="hrv" name="HRV" value="36 ms" dir="down" baseline={48} band={4} values={[47, 49, 46, 44, 40, 36]}>
+            12 below baseline
+          </Reading>
+          <Reading metric="sleep" name="Sleep last night" value="5h 12m" dir="down" baseline={7} band={0.5} values={[7.1, 6.8, 7.2, 6.9, 6.6, 5.2]}>
+            1h 48m below baseline
+          </Reading>
+          <Reading metric="activity" name="Steps so far" value="3,240" dir="flat" baseline={3200} band={400} values={[3100, 3350, 3000, 3300, 3150, 3240]}>
+            As usual
+          </Reading>
         </ul>
+        <p className="card-foot">The band is your usual range, the dot is now.</p>
       </Card>
     </Screen>
   );

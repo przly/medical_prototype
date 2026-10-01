@@ -32,7 +32,7 @@ export const steps = [
     when: "Week 7 · Wednesday, 16:42",
     title: "She says what the day was like",
     story: [
-      "A reorganisation has started at work. After a big presentation on very little sleep, Annie says “Log a thought” and talks for 18 seconds.",
+      "A reorganisation has started at work. After a big presentation on very little sleep, Annie says “Log a thought” and talks for 20 seconds.",
       "The app saves it and says nothing more. It records only because she asked it to.",
     ],
   },
