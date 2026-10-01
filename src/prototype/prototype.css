@@ -49,15 +49,16 @@
   left: 50%;
   translate: -50% 0;
   border-radius: 999px;
-  background: var(--background);
-  box-shadow: inset 0 0 0 1px var(--border), 0 6px 20px -12px rgb(0 0 0 / 0.25);
+  /* The app's primary button: brand blue with its soft blue shadow. */
+  background: var(--brand);
+  box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
 }
 
 /* Starts at the centre line; the script shifts it so the active step lands there. */
 .proto-track {
   position: relative;
   display: flex;
-  gap: 4px;
+  gap: 16px;
   width: max-content;
   margin: 0 0 0 50%;
   padding: 0;
@@ -89,13 +90,17 @@
   transform: scale(0.98);
 }
 
-.proto-step:hover,
-.proto-step.on {
+.proto-step:hover {
   color: var(--foreground);
 }
 
+/* On the blue pill. */
+.proto-step.on {
+  color: #fff;
+}
+
 .proto-step:focus-visible {
-  outline: 2px solid var(--c);
+  outline: 2px solid var(--foreground);
   outline-offset: 2px;
 }
 
@@ -107,8 +112,15 @@
   height: 36px;
   flex: none;
   border-radius: 50%;
-  background: var(--c-soft);
-  color: var(--c);
+  /* The app's grey fill; on the active step's blue pill it turns to a white tint. */
+  background: var(--default);
+  color: var(--muted);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.proto-step.on .proto-node {
+  background: rgb(255 255 255 / 0.22);
+  color: #fff;
 }
 
 .proto-copy {
@@ -119,16 +131,22 @@
 }
 
 .proto-num {
-  font-size: 12px;
+  font-family: var(--rounded);
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--c, var(--muted));
+  line-height: 1;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
+.proto-step.on .proto-num {
+  color: rgb(255 255 255 / 0.8);
+}
+
 .proto-verb {
+  font-family: var(--rounded);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.01em;
 }
@@ -2032,6 +2050,8 @@
 
 /* Page-level buttons follow the same floor. */
 .proto-back.button {
+  /* A white fill inside the outline, so it reads on the page background. */
+  --button-bg: #fff;
   height: 44px;
   padding-inline: 16px;
   border-radius: 999px;

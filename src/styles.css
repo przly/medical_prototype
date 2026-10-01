@@ -121,8 +121,8 @@ em {
 }
 
 /* QR code to the hosted prototype, pinned to the top right corner with a
-   short invitation beside it. The white tile gives the code the quiet margin
-   scanners need. */
+   short invitation beside it. The platter is the primary button's blue; the
+   code sits on its own white tile, the quiet margin scanners need. */
 .page-qr {
   position: fixed;
   z-index: 10;
@@ -130,34 +130,41 @@ em {
   right: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  /* The same space either side of the text, so it sits mid-way between the
+     platter's edge and the code. */
+  gap: 14px;
   padding: 8px 8px 8px 14px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px var(--border);
-  color: var(--muted);
-  font-size: 13px;
+  border-radius: 16px;
+  background: var(--brand);
+  box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
+  color: rgb(255 255 255 / 0.85);
+  font-size: 15px;
   line-height: 1.4;
   text-decoration: none;
 }
 
 .page-qr span {
   max-width: 16ch;
+  text-align: center;
   text-wrap: balance;
 }
 
 /* The call to action gets its own line. */
 .page-qr b {
   display: block;
-  color: var(--foreground);
+  color: #fff;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .page-qr img {
   display: block;
+  box-sizing: content-box;
   width: 112px;
   height: 112px;
+  padding: 6px;
+  border-radius: 10px;
+  background: #fff;
   image-rendering: pixelated;
 }
 

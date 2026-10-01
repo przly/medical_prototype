@@ -277,7 +277,7 @@ export default function LoopPrototype({ onBack }) {
               <button
                 role="tab"
                 aria-selected={on}
-                className={`proto-step layer-${s.layer} ${on ? "on" : ""}`}
+                className={`proto-step ${on ? "on" : ""}`}
                 onClick={() => go(i)}
               >
                 <span className="proto-node">

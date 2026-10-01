@@ -2,6 +2,7 @@
 // prototype screens (section 15). The story beside the phone is the real-case
 // scenario (section 24) of ../mental_wellbeing_concept_documentation.md, told
 // one step at a time so it matches what the screen shows.
+// `verb` is the step's name in the step bar: what its screen is called in the app.
 export const steps = [
   {
     verb: "Set up",
@@ -15,7 +16,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Sense",
+    verb: "Today",
     layer: "body",
     icon: "pulse",
     when: "Weeks 1–4",
@@ -26,7 +27,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Capture",
+    verb: "Log a thought",
     layer: "context",
     icon: "mic",
     when: "Week 7 · Wednesday, 16:42",
@@ -37,7 +38,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Structure",
+    verb: "Log details",
     layer: "ai",
     icon: "tags",
     when: "Moments later",
@@ -48,7 +49,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Connect",
+    verb: "Insights",
     layer: "ai",
     icon: "link",
     when: "Weeks 5–10",
@@ -59,7 +60,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Reflect",
+    verb: "Your week",
     layer: "context",
     icon: "calendar",
     when: "Week 10 · Sunday evening",
@@ -69,7 +70,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Learn",
+    verb: "Pattern map",
     layer: "body",
     icon: "map",
     when: "Week 11 · Thursday",
@@ -91,7 +92,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Talk",
+    verb: "Appointment",
     layer: "care",
     icon: "chat",
     when: "At the appointment · 10:30",
@@ -102,7 +103,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Control",
+    verb: "Access",
     layer: "care",
     icon: "key",
     when: "After the appointment",
