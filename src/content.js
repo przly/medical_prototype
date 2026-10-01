@@ -12,7 +12,7 @@ export const steps = [
     title: "Felix sets up the app",
     story: [
       "Felix is 34 and works as a project manager in Amsterdam. He installs the app after a colleague’s burnout.",
-      "He fills in the basics and connects his Apple Watch and AirPods. Medical records and family links are optional, so he can skip them for now.",
+      "He fills in the basics and connects his Apple Watch and AirPods. Medical data and family are optional, so he can add them later.",
     ],
   },
   {
@@ -22,8 +22,8 @@ export const steps = [
     when: "Weeks 1–4",
     title: "The watch learns what is normal for him",
     story: [
-      "Felix does nothing special. His watch tracks sleep, heart rate and HRV in the background.",
-      "After a few weeks the app knows his personal baseline: about seven hours of sleep and a resting heart rate of 57. Today everything is within his usual range.",
+      "His watch tracks sleep, heart rate and HRV in the background. After a few weeks the app knows his baseline.",
+      "The overview compares today with it: sleep and exercise are normal, stress is low and mood is high.",
     ],
   },
   {
@@ -33,8 +33,8 @@ export const steps = [
     when: "Week 7 · Wednesday, 16:42",
     title: "He says what the day was like",
     story: [
-      "A reorganisation has started at work. After a big presentation on very little sleep, Felix says “Log a thought” and talks for 20 seconds.",
-      "The app saves it and says nothing more. It records only because he asked it to.",
+      "After a big presentation on very little sleep, Felix talks to his AirPods for 20 seconds.",
+      "The app saves the log. It only records when he asks it to.",
     ],
   },
   {
@@ -44,21 +44,20 @@ export const steps = [
     when: "Moments later",
     title: "His words become context",
     story: [
-      "The app pulls the topics out of what he said: work, the presentation, poor sleep.",
-      "What Felix reported (stressed, tired) is kept apart from what the watch measured (higher stress, 5h 12m of sleep), so he can see which is which.",
+      "The app pulls the context out of what he said: work, the presentation, poor sleep.",
+      "What he reported (stressed, tired) is kept apart from what the sensors measured (high stress, 5h 12m of sleep).",
     ],
   },
   {
     verb: "Insights",
     layer: "ai",
     icon: "link",
-    when: "Weeks 5–10",
+    when: "Over 12 weeks",
     title: "The two kinds of data start to line up",
     story: [
-      "As the weeks add up, the app notices things that keep happening together: higher stress on 4 of the 5 days he mentioned deadlines, and a better mood on days he exercised.",
-      "Below, his signals over twelve weeks show the longer pattern: sleep and mood drifting down and stress up, while exercise holds steady.",
-      "It tells him they happened together. It does not claim one caused the other.",
-      "The drift has lasted more than two weeks and is well outside his usual range, so the app suggests discussing it with his GP. He taps “Set up meeting with a doctor”.",
+      "Over the weeks, the app notices what keeps happening together: more stress on deadline days, tiredness after short nights, a better mood on days he exercised.",
+      "It shows the sources for each and does not claim one caused the other.",
+      "Over 12 weeks his sleep and mood have dropped and his stress has risen, so he sets up a doctor’s appointment.",
     ],
   },
   {
@@ -69,7 +68,7 @@ export const steps = [
     title: "He decides what his GP sees",
     story: [
       "Felix shares his trends, mood and goals with Dr. Kikker, his GP, and keeps his voice transcripts private.",
-      "The moment he shares, the overview appears on the doctor’s phone. The GP reads twelve weeks in a minute instead of relying on what Felix remembers.",
+      "The overview appears on the doctor’s phone straight away. The GP reads twelve weeks in a minute instead of relying on what Felix remembers.",
     ],
   },
   {
@@ -79,8 +78,8 @@ export const steps = [
     when: "At the appointment · 10:30",
     title: "The GP asks before recording",
     story: [
-      "Dr. Kikker would like to record the session for note-taking. The request appears on Felix’s phone and he decides.",
-      "Afterwards the GP sends him the summary and AI notes: protect his sleep, restart the lunchtime runs, check in again in three weeks. The GP, not the app, decides what the data means.",
+      "Dr. Kikker asks to record the session for his notes. The request appears on Felix’s phone and he decides.",
+      "Afterwards the GP sends him the summary: protect his sleep, restart the lunchtime runs, check in again in three weeks.",
     ],
   },
   {
@@ -88,10 +87,10 @@ export const steps = [
     layer: "care",
     icon: "key",
     when: "After the appointment",
-    title: "Keep sharing, or take it back",
+    title: "Keep sharing, or stop",
     story: [
       "Felix chooses. If he keeps sharing, the GP can follow his progress and send results such as a blood test.",
-      "If he revokes access, the doctor’s view locks straight away. What the GP already sent stays with him.",
+      "If he stops sharing, the doctor’s view locks straight away. What the GP already sent stays with him.",
     ],
   },
 ];

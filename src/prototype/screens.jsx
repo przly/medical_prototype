@@ -257,9 +257,9 @@ function Danger({ children, icon: ButtonIcon, onClick }) {
 }
 
 // Low-emphasis action under the main one.
-function Quiet({ children, onClick, danger }) {
+function Quiet({ children, onClick }) {
   return (
-    <Button fullWidth variant="ghost" className={`app-link ${danger ? "danger" : ""}`} onPress={onClick}>
+    <Button fullWidth variant="ghost" className="app-link" onPress={onClick}>
       {children}
     </Button>
   );
@@ -385,7 +385,7 @@ const setup = [
         control: "connect",
         rows: [
           ["Apple Watch", Watch, "Sleep, heart rate, HRV"],
-          ["AirPods", Headphones, "Voice reflections"],
+          ["AirPods", Headphones, "Voice logs"],
         ],
       },
       {
@@ -781,7 +781,7 @@ function Capture({ next }) {
       trailing={<Tag kind="airpods">AirPods</Tag>}
       action={
         <Primary icon={saved || done ? Check : Mic} onClick={save} disabled={!done || saved}>
-          {saved ? "Saved" : done ? "Save thought" : "Listening…"}
+          {saved ? "Saved" : done ? "Save log" : "Listening…"}
         </Primary>
       }
     >
@@ -928,6 +928,10 @@ function InsightLoader({ onDone }) {
         </ProgressBar.Track>
       </ProgressBar>
       <span className="loader-time">{left > 0 ? `About ${left} seconds left` : "Done"}</span>
+      <p className="loader-privacy">
+        <ShieldCheck size={15} strokeWidth={2.25} aria-hidden="true" />
+        All data and AI processing happen on this device. Nothing leaves your phone.
+      </p>
     </motion.div>
   );
 }
@@ -983,7 +987,7 @@ function Structure({ next }) {
           <Reading metric="hrv" trend="worse" name="HRV" value="36 ms" dir="down" baseline={48} band={4} values={[47, 49, 46, 44, 40, 36]} amount="12">
             below baseline
           </Reading>
-          <Reading metric="sleep" trend="worse" name="Sleep" value="5h 12m" dir="down" baseline={7} band={0.5} values={[7.1, 6.8, 7.2, 6.9, 6.6, 5.2]} amount="1h 48m">
+          <Reading metric="sleep" trend="worse" name="Sleep" value="5h 12m" dir="down" baseline={7.5} band={0.5} values={[7.6, 7.3, 7.5, 7.4, 7.1, 5.2]} amount="2h 18m">
             below baseline
           </Reading>
           <Reading metric="activity" name="Steps" value="3,240" dir="flat" baseline={3200} band={400} values={[3100, 3350, 3000, 3300, 3150, 3240]} amount="As usual" />
@@ -1044,7 +1048,7 @@ function Connect({ next }) {
     <Screen
       eyebrow="Last 2 weeks"
       title="Insights"
-      action={<Primary icon={Stethoscope} onClick={next}>Set up meeting with a doctor</Primary>}
+      action={<Primary icon={Stethoscope} onClick={next}>Set up a doctor’s appointment</Primary>}
     >
       {/* The companion says what it found, in its own speech bubble. */}
       <motion.div className="ai-says" variants={item}>
@@ -1135,7 +1139,7 @@ function Connect({ next }) {
       </Card>
       <Card className="pattern">
         <Tag kind="neutral">Recurring</Tag>
-        <p>Shorter sleep often came alongside higher stress and reflections mentioning tiredness.</p>
+        <p>Shorter sleep often came alongside higher stress and logs mentioning tiredness.</p>
       </Card>
       <Note icon={Info}>
         These things <b>happened together</b>. That doesn’t mean one caused the other.
@@ -1345,7 +1349,7 @@ function Share({ next, care, update }) {
             exit={{ opacity: 0 }}
           >
             <Note icon={CircleCheck} status="success" title="Shared with Dr. Kikker">
-              You can end access at any time.
+              You can stop sharing at any time.
             </Note>
             <Danger icon={ShieldOff} onClick={() => update({ access: "none" })}>
               Stop sharing
@@ -1621,7 +1625,7 @@ function DoctorSession({ next, care, update }) {
           <Orb size={36} />
           <div>
             <p>Request sent</p>
-            <span>Felix sees it on their phone and decides.</span>
+            <span>Felix sees it on his phone and decides.</span>
           </div>
         </Card>
       )}
@@ -1675,9 +1679,9 @@ function PatientAccess({ care, update, restart }) {
             <Primary icon={ShieldCheck} onClick={() => update({ kept: true })}>
               Keep sharing
             </Primary>
-            <Quiet danger onClick={revoke}>
+            <Danger icon={ShieldOff} onClick={revoke}>
               Stop sharing
-            </Quiet>
+            </Danger>
           </>
         ) : (
           !shared && <Primary icon={Lock} onClick={share}>Share again</Primary>

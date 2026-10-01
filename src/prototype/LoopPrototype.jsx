@@ -175,6 +175,18 @@ const PHONE_H = 901;
 const PHONE_GAP = 56;
 // Below this width the layout stacks and shows one phone at a time.
 const WIDE = 960;
+// Room above the phones for the Patient / Doctor labels.
+const ROLE_ROOM = 52;
+
+// The second phone's arrival: a little slower than the in-app spring, so the
+// stage has time to make room.
+const stageSpring = { type: "spring", bounce: 0, duration: 0.6 };
+// The labels follow once the phones are nearly in place.
+const roleFade = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { ...stageSpring, delay: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
 
 function useViewport() {
   const read = () => {
@@ -193,7 +205,7 @@ function useViewport() {
 // Leaves the page's vertical padding (2 × 48px) and the step bar free and, on
 // wide screens, room for the explanation beside the phones.
 function fitScale({ w, h }, phones) {
-  const labels = phones > 1 ? 52 : 0;
+  const labels = phones > 1 ? ROLE_ROOM : 0;
   const byHeight = (h - 96 - 72 - labels) / PHONE_H;
   const room = w >= WIDE ? Math.min(w, 1440) - 32 - 80 - 280 : w - 32;
   const byWidth = (room - PHONE_GAP * (phones - 1)) / (PHONE_W * phones);
@@ -226,10 +238,25 @@ export default function LoopPrototype({ onBack }) {
   const showDoctor = dual && (both || view === "doctor");
   const showPatient = !dual || both || view === "patient";
   const scale = fitScale(viewport, both ? 2 : 1);
+  // The slots, the phones' scale, the gap between them and the room for the
+  // labels all move on the one spring, so nothing snaps while the rest eases.
   const slot = {
-    in: { opacity: 1, width: PHONE_W * scale, height: PHONE_H * scale },
-    out: { opacity: 0, width: 0, height: PHONE_H * scale },
+    in: { opacity: 1, width: PHONE_W * scale, height: PHONE_H * scale, marginLeft: 0 },
+    // A leaving phone is drawn wider than its closing slot, so it fades out
+    // quickly, before it can drift over the text beside the stage.
+    out: {
+      opacity: 0,
+      width: 0,
+      height: PHONE_H * scale,
+      marginLeft: 0,
+      transition: { ...stageSpring, opacity: { duration: 0.12 } },
+    },
   };
+  // An arriving phone fades in once its slot has opened most of the way.
+  const slotMove = { ...stageSpring, opacity: { duration: 0.3, delay: 0.2 } };
+  // The gap belongs to the doctor's slot, so it opens as that phone arrives
+  // instead of appearing at once.
+  const doctorIn = { ...slot.in, marginLeft: both ? PHONE_GAP : 0 };
 
   // Steps are as wide as their labels, so the active one is measured: the row
   // shifts until it is centred and the highlight takes its width.
@@ -254,7 +281,12 @@ export default function LoopPrototype({ onBack }) {
       </Button>
       {/* Step carousel: every step is shown, the active one stays in the middle
           and the row slides under a highlight that hugs it. */}
-      <div className="proto-steps">
+      <motion.div
+        className="proto-steps"
+        initial={{ opacity: 0, y: 32 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...stageSpring, delay: 0.25 }}
+      >
         <motion.span
           className="proto-step-bg"
           initial={false}
@@ -292,7 +324,7 @@ export default function LoopPrototype({ onBack }) {
           );
         })}
         </motion.ol>
-      </div>
+      </motion.div>
 
       {dual && !both && (
         <Tabs className="view-toggle" selectedKey={view} onSelectionChange={setView}>
@@ -311,7 +343,14 @@ export default function LoopPrototype({ onBack }) {
         </Tabs>
       )}
 
-      <div className={`proto-stage ${both ? "dual" : ""}`} style={{ "--scale": scale }}>
+      {/* On arrival from the context pages the phone rises into place, then the
+          story beside it and the step bar follow. */}
+      <motion.div
+        className={`proto-stage ${both ? "dual" : ""}`}
+        initial={{ opacity: 0, y: 56, "--scale": scale, marginTop: both ? ROLE_ROOM : 0 }}
+        animate={{ opacity: 1, y: 0, "--scale": scale, marginTop: both ? ROLE_ROOM : 0 }}
+        transition={stageSpring}
+      >
         {/* Map pointer positions into the phone's unscaled space so drags stay 1:1. */}
         <MotionConfig transformPagePoint={(p) => ({ x: p.x / scale, y: p.y / scale })}>
           <AnimatePresence initial={false}>
@@ -322,14 +361,16 @@ export default function LoopPrototype({ onBack }) {
                 initial={slot.out}
                 animate={slot.in}
                 exit={slot.out}
-                transition={spring}
+                transition={slotMove}
               >
-                {both && (
-                  <span className="phone-role role-patient">
-                    <img src={patientImage} alt="" width={36} height={36} />
-                    Patient
-                  </span>
-                )}
+                <AnimatePresence>
+                  {both && (
+                    <motion.span className="phone-role role-patient" {...roleFade}>
+                      <img src={patientImage} alt="" width={36} height={36} />
+                      Patient
+                    </motion.span>
+                  )}
+                </AnimatePresence>
                 <Phone
                   name="patient"
                   screens={screens}
@@ -349,16 +390,18 @@ export default function LoopPrototype({ onBack }) {
                 key="doctor"
                 className="phone-slot"
                 initial={slot.out}
-                animate={slot.in}
+                animate={doctorIn}
                 exit={slot.out}
-                transition={spring}
+                transition={slotMove}
               >
-                {both && (
-                  <span className="phone-role role-doctor">
-                    <img src={doctorImage} alt="" width={36} height={36} />
-                    Doctor
-                  </span>
-                )}
+                <AnimatePresence>
+                  {both && (
+                    <motion.span className="phone-role role-doctor" {...roleFade}>
+                      <img src={doctorImage} alt="" width={36} height={36} />
+                      Doctor
+                    </motion.span>
+                  )}
+                </AnimatePresence>
                 <Phone
                   name="doctor"
                   screens={doctorScreens}
@@ -376,9 +419,14 @@ export default function LoopPrototype({ onBack }) {
             )}
           </AnimatePresence>
         </MotionConfig>
-      </div>
+      </motion.div>
 
-      <div className={`proto-explain layer-${step.layer}`}>
+      <motion.div
+        className={`proto-explain layer-${step.layer}`}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...stageSpring, delay: 0.15 }}
+      >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active}
@@ -392,15 +440,17 @@ export default function LoopPrototype({ onBack }) {
             {step.story.map((para) => (
               <p key={para}>{para}</p>
             ))}
+            {/* Part of the step's text, so it comes and goes with it rather
+                than shifting the text when the second phone does. */}
+            {dual && (
+              <p className="proto-hint">
+                Both phones are live: what the patient does shows up on the doctor’s
+                side, and the other way round.
+              </p>
+            )}
           </motion.div>
         </AnimatePresence>
-        {dual && (
-          <p className="proto-hint">
-            Both phones are live: what the patient does shows up on the doctor’s
-            side, and the other way round.
-          </p>
-        )}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -155,13 +155,8 @@
   position: relative;
   display: flex;
   justify-content: center;
-  /* Keep in step with PHONE_GAP in LoopPrototype.jsx. */
-  gap: 56px;
-}
-
-/* Room for the Patient / Doctor labels above the phones. */
-.proto-stage.dual {
-  margin-top: 52px;
+  /* The gap between two phones and the room for their labels are animated
+     from LoopPrototype.jsx, so they open as the second phone arrives. */
 }
 
 .phone-slot {
@@ -276,8 +271,8 @@
   height: 901px;
   transform: scale(var(--scale, 1));
   transform-origin: top left;
-  /* Eases the resize when the second phone joins. */
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  /* --scale is animated from LoopPrototype.jsx, on the same spring as the
+     slot's size, so the phone and its slot resize together. */
 }
 
 /* The frame image has no shadow of its own. A second copy of it sits behind
@@ -1295,6 +1290,29 @@
   transition: width 0.1s linear;
 }
 
+/* Pinned to the bottom of the loader, above the tab bar. */
+.loader-privacy {
+  position: absolute;
+  left: 40px;
+  right: 40px;
+  bottom: 112px;
+  /* The icon sits above the text, both centred on the screen. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.loader-privacy svg {
+  flex: none;
+  color: var(--app-positive);
+}
+
 .loader-time {
   font-size: 13px;
   color: var(--muted);
@@ -2055,16 +2073,17 @@
   box-shadow: 0 3px 10px rgb(255 59 48 / 0.16);
 }
 
-/* Plain text button in the link colour: Skip, Not now, Stop sharing. */
+/* Two full-size buttons stacked in the pinned action get a little more air. */
+.screen-action .app-primary + .app-danger {
+  margin-top: 4px;
+}
+
+/* Plain text button in the link colour: Skip, Not now. */
 .phone .app-link {
   height: 44px;
   --button-fg: var(--app-link);
   font-size: 17px;
   font-weight: 400;
-}
-
-.phone .app-link.danger {
-  --button-fg: var(--danger);
 }
 
 /* Row buttons (Connect, Invite, Send) look compact but still take a 44pt tap. */
