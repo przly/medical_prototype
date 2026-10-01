@@ -5,6 +5,9 @@ import { ArrowLeft } from "lucide-react";
 import Icon from "../Icon.jsx";
 import { steps } from "../content.js";
 import { DOCTOR_FROM, doctorScreens, initialCare, screens, spring } from "./screens.jsx";
+import phoneFrame from "../assets/device/iphone-frame.png";
+import patientImage from "../assets/avatars/annie.jpg";
+import doctorImage from "../assets/avatars/doctor.jpg";
 import "./prototype.css";
 
 const ease = [0.22, 1, 0.36, 1];
@@ -102,6 +105,7 @@ function Phone({ name, screens, offset = 0, tabs, hideTabs, active, dir, go, min
   return (
     // The app inside the phone stays light whatever the page theme.
     <div className="phone" data-theme="light">
+      <img className="phone-shadow" src={phoneFrame} alt="" aria-hidden="true" draggable={false} />
       <div className="phone-screen">
         <StatusBar />
         <div className="viewport">
@@ -159,15 +163,16 @@ function Phone({ name, screens, offset = 0, tabs, hideTabs, active, dir, go, min
         </AnimatePresence>
         <span className="home-indicator" aria-hidden="true" />
       </div>
+      <img className="phone-frame" src={phoneFrame} alt="" draggable={false} />
     </div>
   );
 }
 
 // The phone is designed at real point sizes and scaled as a whole to fill the window.
-// iPhone 16 Pro: a 393×852pt screen inside a 12pt bezel.
-const PHONE_W = 417;
-const PHONE_H = 876;
-const PHONE_GAP = 24;
+// The device frame image, sized so its screen opening is 393pt wide.
+const PHONE_W = 441;
+const PHONE_H = 901;
+const PHONE_GAP = 56;
 // Below this width the layout stacks and shows one phone at a time.
 const WIDE = 960;
 
@@ -188,7 +193,7 @@ function useViewport() {
 // Leaves the page's vertical padding (2 × 48px) and the step bar free and, on
 // wide screens, room for the explanation beside the phones.
 function fitScale({ w, h }, phones) {
-  const labels = phones > 1 ? 40 : 0;
+  const labels = phones > 1 ? 52 : 0;
   const byHeight = (h - 96 - 72 - labels) / PHONE_H;
   const room = w >= WIDE ? Math.min(w, 1440) - 32 - 80 - 280 : w - 32;
   const byWidth = (room - PHONE_GAP * (phones - 1)) / (PHONE_W * phones);
@@ -319,7 +324,12 @@ export default function LoopPrototype({ onBack }) {
                 exit={slot.out}
                 transition={spring}
               >
-                {both && <span className="phone-role role-patient">Patient</span>}
+                {both && (
+                  <span className="phone-role role-patient">
+                    <img src={patientImage} alt="" width={36} height={36} />
+                    Patient
+                  </span>
+                )}
                 <Phone
                   name="patient"
                   screens={screens}
@@ -343,7 +353,12 @@ export default function LoopPrototype({ onBack }) {
                 exit={slot.out}
                 transition={spring}
               >
-                {both && <span className="phone-role role-doctor">Doctor</span>}
+                {both && (
+                  <span className="phone-role role-doctor">
+                    <img src={doctorImage} alt="" width={36} height={36} />
+                    Doctor
+                  </span>
+                )}
                 <Phone
                   name="doctor"
                   screens={doctorScreens}

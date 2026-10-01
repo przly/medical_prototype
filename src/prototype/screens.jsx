@@ -49,7 +49,8 @@ import {
 } from "lucide-react";
 import { DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
 import appleHealthIcon from "../assets/apps/apple-health.jpg";
-import profileImage from "../assets/avatars/blue.jpg";
+import profileImage from "../assets/avatars/annie.jpg";
+import doctorImage from "../assets/avatars/doctor.jpg";
 import lifesumIcon from "../assets/apps/lifesum.jpg";
 import myFitnessPalIcon from "../assets/apps/myfitnesspal.jpg";
 import yazioIcon from "../assets/apps/yazio.jpg";
@@ -342,6 +343,26 @@ function Note({ icon: NoteIcon, status, title, children }) {
   );
 }
 
+// Profile button for the top right corner of a screen. HeroUI's custom image
+// composition: Avatar.Image tracks loading and shows the initials until the
+// image is ready.
+function ProfileButton({ image, initials, name }) {
+  return (
+    <button className="avatar-btn" aria-label={`${name}: profile and privacy`}>
+      <Avatar className="size-11">
+        <Avatar.Image asChild src={image}>
+          <img alt="" src={image} width={44} height={44} />
+        </Avatar.Image>
+        <Avatar.Fallback>{initials}</Avatar.Fallback>
+      </Avatar>
+    </button>
+  );
+}
+
+// Whose phone it is: Annie's on the patient side, the GP's on the doctor side.
+const patientProfile = <ProfileButton image={profileImage} initials="AK" name="Annie Koster" />;
+const doctorProfile = <ProfileButton image={doctorImage} initials="LV" name="L. Visser" />;
+
 function MetricTile({ metric, value, unit, values, status }) {
   return (
     <Card className="metric-tile">
@@ -623,18 +644,7 @@ function Today({ next }) {
         </div>
       }
       action={<Primary icon={Mic} onClick={next}>Log a thought</Primary>}
-      trailing={
-        <button className="avatar-btn" aria-label="Profile and privacy">
-          {/* HeroUI's custom image composition: Avatar.Image tracks loading and
-              shows the initials until the image is ready. */}
-          <Avatar className="size-11">
-            <Avatar.Image asChild src={profileImage}>
-              <img alt="Annie Koster" src={profileImage} width={44} height={44} />
-            </Avatar.Image>
-            <Avatar.Fallback>AK</Avatar.Fallback>
-          </Avatar>
-        </button>
-      }
+      trailing={patientProfile}
     >
       <motion.div className="today-path" variants={item}>
         <div className="path-heading">
@@ -1114,6 +1124,7 @@ function Share({ next, care, update }) {
     <Screen
       eyebrow="Care · Prepare & share"
       title="Share overview"
+      trailing={patientProfile}
       action={
         !shared && (
           <Primary
@@ -1128,7 +1139,7 @@ function Share({ next, care, update }) {
         )
       }
     >
-      <Person initials="LV" name="L. Visser" sub="GP · appointment today, 10:30" />
+      <Person initials="LV" name="L. Visser" sub="GP · appointment today, 10:30" image={doctorImage} />
       <Card>
         <span className="card-label">What they’ll see</span>
         <ul className="toggles">
@@ -1224,6 +1235,7 @@ function DoctorOverview({ next, care }) {
     <Screen
       eyebrow={shared ? "Shared overview · last 12 weeks" : "Patient"}
       title="Annie Koster"
+      trailing={doctorProfile}
       action={shared && <Primary icon={ArrowRight} onClick={next}>Start the session</Primary>}
     >
       {!shared && <NoAccess revoked={care.access === "revoked"} />}
@@ -1318,8 +1330,8 @@ function PatientSession({ next, care, update }) {
   };
 
   return (
-    <Screen eyebrow="Today, 10:30" title="Appointment" action={actions[state]}>
-      <Person initials="LV" name="L. Visser" sub="GP · in session now" />
+    <Screen eyebrow="Today, 10:30" title="Appointment" trailing={patientProfile} action={actions[state]}>
+      <Person initials="LV" name="L. Visser" sub="GP · in session now" image={doctorImage} />
       {state === "idle" && (
         <Note icon={ShieldCheck} status="success">
           {care.access === "shared"
@@ -1398,7 +1410,7 @@ function DoctorSession({ next, care, update }) {
   };
 
   return (
-    <Screen eyebrow="Today, 10:30" title="Session" action={actions[state]}>
+    <Screen eyebrow="Today, 10:30" title="Session" trailing={doctorProfile} action={actions[state]}>
       <Person initials="AK" name="Annie Koster" sub="34 · in session now" image={profileImage} />
       {state === "idle" && (
         <Card>
@@ -1461,6 +1473,7 @@ function PatientAccess({ care, update, restart }) {
     <Screen
       eyebrow="Care · Sharing & privacy"
       title="Your sharing"
+      trailing={patientProfile}
       action={
         shared && !care.kept ? (
           <>
@@ -1478,6 +1491,7 @@ function PatientAccess({ care, update, restart }) {
     >
       <Person
         initials="LV"
+        image={doctorImage}
         name="L. Visser"
         sub={shared ? "GP · has access since today" : "GP · no access"}
       />
@@ -1539,7 +1553,7 @@ function DoctorAccess({ care, update }) {
   ];
 
   return (
-    <Screen eyebrow="Patient record" title="Annie Koster">
+    <Screen eyebrow="Patient record" title="Annie Koster" trailing={doctorProfile}>
       {shared ? (
         <>
           <Note icon={ShieldCheck} status="success">
