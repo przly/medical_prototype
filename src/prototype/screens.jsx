@@ -20,6 +20,7 @@ import {
   Dumbbell,
   FileText,
   FlaskConical,
+  Frown,
   Headphones,
   Heart,
   HeartPulse,
@@ -40,7 +41,6 @@ import {
   Stethoscope,
   Syringe,
   Target,
-  TrendingUp,
   User,
   Users,
   Watch,
@@ -293,6 +293,16 @@ function Primary({ children, icon: ButtonIcon, onClick, disabled }) {
 function Danger({ children, icon: ButtonIcon, onClick }) {
   return (
     <Button fullWidth size="lg" variant="danger-soft" className="app-danger" onPress={onClick}>
+      {ButtonIcon && <ButtonIcon {...iconProps} />}
+      {children}
+    </Button>
+  );
+}
+
+// Neutral glass button, for a pair of equal choices.
+function Secondary({ children, icon: ButtonIcon, onClick, disabled }) {
+  return (
+    <Button fullWidth size="lg" variant="secondary" className="app-secondary" onPress={onClick} isDisabled={disabled}>
       {ButtonIcon && <ButtonIcon {...iconProps} />}
       {children}
     </Button>
@@ -630,6 +640,58 @@ function Onboarding({ next }) {
   );
 }
 
+// The week's stress, sleep and activity cards, shown on Today and on Your week.
+const stressWeek = [0.35, 0.8, 0.9, 0.85, 0.5, 0.3, 0.25];
+const days = ["M", "T", "W", "T", "F", "S", "S"];
+
+function SignalCards() {
+  return (
+    <>
+      <Card>
+        <div className="row-between">
+          <Label metric="stress">Stress</Label>
+          <span className="delta up">
+            <ArrowUpRight size={14} strokeWidth={2.5} aria-hidden="true" />
+            Higher than usual
+          </span>
+        </div>
+        <div className="bars">
+          {stressWeek.map((v, i) => (
+            <div key={i} className="bar-col">
+              <motion.span
+                className={v > 0.7 ? "hot" : ""}
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: v }}
+                transition={{ duration: 0.6, delay: 0.25 + i * 0.05, ease }}
+              />
+              <em>{days[i]}</em>
+            </div>
+          ))}
+        </div>
+      </Card>
+      <div className="grid-2">
+        <Card className="sleep-summary">
+          <Label metric="sleep">Sleep</Label>
+          <div className="big-num sm">6h 42m</div>
+          <span className="delta down">
+            <ArrowDownRight size={14} strokeWidth={2.5} aria-hidden="true" />
+            48m below baseline
+          </span>
+          <SleepBars />
+        </Card>
+        <Card>
+          <Label metric="activity">Activity</Label>
+          <div className="big-num sm">3</div>
+          <span className="delta">
+            <Minus size={14} strokeWidth={2.5} aria-hidden="true" />
+            workouts, as usual
+          </span>
+        </Card>
+      </div>
+    </>
+  );
+}
+
 /* 02 · Sense — Today */
 function Today({ next }) {
   const hr = [58, 57, 59, 56, 58, 61, 57];
@@ -665,16 +727,7 @@ function Today({ next }) {
         <MetricTile metric="hrv" value="48" unit="HRV · ms" status="Within range" values={[49, 45, 46, 43, 47, 49, 48]} />
         <MetricTile metric="stress" value="Low" unit="Stress" status="Steady" values={[5, 3, 4, 6, 5, 4, 3]} />
       </div>
-      <Card className="metric-detail">
-        <Label metric="heart">Resting heart rate</Label>
-        <div className="metric-detail-row">
-          <div>
-            <div className="big-num">57 <small>bpm</small></div>
-            <span className="status-normal">Within range</span>
-          </div>
-          <DotSpark values={hr} label="Resting heart rate trend" />
-        </div>
-      </Card>
+      <SignalCards />
     </Screen>
   );
 }
@@ -949,15 +1002,26 @@ function Connect({ next }) {
 }
 
 /* 06 · Reflect — Weekly overview */
-const stressWeek = [0.35, 0.8, 0.9, 0.85, 0.5, 0.3, 0.25];
-const days = ["M", "T", "W", "T", "F", "S", "S"];
-
 function Weekly({ next }) {
+  // Feeling good is noted here; not feeling good leads on to the longer view.
+  const [good, setGood] = useState(false);
+  const feelGood = () => {
+    haptic();
+    setGood(true);
+  };
+
   return (
     <Screen
       eyebrow="7 – 13 October"
       title="Your week"
-      action={<Primary icon={TrendingUp} onClick={next}>See the long-term view</Primary>}
+      action={
+        <div className="action-pair">
+          <Secondary icon={good ? Check : Smile} onClick={feelGood} disabled={good}>
+            {good ? "Noted" : "I feel good"}
+          </Secondary>
+          <Secondary icon={Frown} onClick={next}>I don’t feel good</Secondary>
+        </div>
+      }
     >
       <motion.div className="ai-says" variants={item}>
         <Orb size={44} />
@@ -967,47 +1031,7 @@ function Weekly({ next }) {
         </p>
       </motion.div>
       <div className="section-heading"><h5>Weekly signals</h5><span>7 days</span></div>
-      <Card>
-        <div className="row-between">
-          <Label metric="stress">Stress</Label>
-          <span className="delta up">
-            <ArrowUpRight size={14} strokeWidth={2.5} aria-hidden="true" />
-            Higher than usual
-          </span>
-        </div>
-        <div className="bars">
-          {stressWeek.map((v, i) => (
-            <div key={i} className="bar-col">
-              <motion.span
-                className={v > 0.7 ? "hot" : ""}
-                initial={{ scaleY: 0 }}
-                animate={{ scaleY: v }}
-                transition={{ duration: 0.6, delay: 0.25 + i * 0.05, ease }}
-              />
-              <em>{days[i]}</em>
-            </div>
-          ))}
-        </div>
-      </Card>
-      <div className="grid-2">
-        <Card className="sleep-summary">
-          <Label metric="sleep">Sleep</Label>
-          <div className="big-num sm">6h 42m</div>
-          <span className="delta down">
-            <ArrowDownRight size={14} strokeWidth={2.5} aria-hidden="true" />
-            48m below baseline
-          </span>
-          <SleepBars />
-        </Card>
-        <Card>
-          <Label metric="activity">Activity</Label>
-          <div className="big-num sm">3</div>
-          <span className="delta">
-            <Minus size={14} strokeWidth={2.5} aria-hidden="true" />
-            workouts, as usual
-          </span>
-        </Card>
-      </div>
+      <SignalCards />
       <Card>
         <Label metric="mood">Mood</Label>
         <div className="mood">
@@ -1069,10 +1093,6 @@ function Patterns({ next }) {
             );
           })}
         </ul>
-        <div className="signals-axis" aria-hidden="true">
-          <span>12 weeks ago</span>
-          <span>Now</span>
-        </div>
         <p className="card-foot">Showing deviation from your baseline</p>
       </Card>
       <Card className="pattern pos">

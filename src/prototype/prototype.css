@@ -905,26 +905,6 @@
   margin-top: 2px;
 }
 
-.metric-detail-row {
-  display: grid;
-  grid-template-columns: 1fr 148px;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.metric-detail .big-num {
-  font-size: 44px;
-  line-height: 1;
-}
-
-.status-normal {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
 .card.sleep-summary {
   background: #15001f;
   color: #fff;
@@ -1536,15 +1516,6 @@
   padding-top: 0;
 }
 
-/* Lines up with the charts, past the name column. */
-.signals-axis {
-  display: flex;
-  justify-content: space-between;
-  margin-left: 112px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
 .pattern p {
   margin-top: 10px;
   font-size: 17px;
@@ -1857,6 +1828,28 @@
 
 .phone .app-primary {
   box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
+}
+
+/* Two equal choices side by side in the pinned action. */
+.action-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Regular glass button with a neutral label. */
+.phone .app-secondary {
+  height: 50px;
+  padding-inline: 8px;
+  gap: 6px;
+  white-space: nowrap;
+  --button-fg: var(--foreground);
+  --button-bg: var(--glass-bg);
+  --button-bg-hover: var(--glass-bg);
+  --button-bg-pressed: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), 0 2px 8px -2px rgb(0 0 0 / 0.1);
 }
 
 /* Regular glass button with a destructive label. */
