@@ -653,7 +653,7 @@ function SignalCards() {
   );
 }
 
-// The four signals at a glance, after the Vitals view in Apple Health: one dot
+// The four signals at a glance, after the Vitals view in Apple Health: one tag
 // per signal, inside the middle band while it is in its usual range and out in
 // an outer band once it has left it.
 function Vitals() {
@@ -663,7 +663,7 @@ function Vitals() {
     const outlier = Math.abs(z) > 1;
     // Outliers sit in the middle of their band; the rest spread across the blue one.
     const y = outlier ? (z > 0 ? 10 : 90) : 50 - z * 18;
-    return { ...r, outlier, y };
+    return { ...r, outlier, y, state: outlier ? (z > 0 ? "High" : "Low") : "Normal" };
   });
   const outliers = signals.filter((sig) => sig.outlier).length;
 
@@ -672,26 +672,28 @@ function Vitals() {
       <div
         className="vitals-chart"
         role="img"
-        aria-label={signals.map((sig) => `${sig.label}: ${sig.outlier ? `${sig.change.toLowerCase()} than usual` : "in your usual range"}`).join(". ")}
+        aria-label={signals.map((sig) => `${sig.label}: ${sig.state.toLowerCase()}`).join(". ")}
       >
-        <span className="vitals-band high">High</span>
-        <span className="vitals-band typical">Baseline</span>
-        <span className="vitals-band low">Low</span>
+        <i className="vitals-band high" />
+        <i className="vitals-band typical" />
+        <i className="vitals-band low" />
         {signals.map((sig, i) => (
           <div key={sig.label} className="vitals-col">
             <motion.span
-              className={`vitals-dot ${sig.outlier ? "outlier" : ""}`}
-              style={{ top: `${sig.y}%` }}
-              initial={{ scale: 0, opacity: 0 }}
+              className={`vitals-tag ${sig.outlier ? "outlier" : ""}`}
+              style={{ top: `${sig.y}%`, x: "-50%", y: "-50%" }}
+              initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ ...spring, delay: 0.3 + i * 0.08 }}
-            />
+            >
+              {sig.state}
+            </motion.span>
           </div>
         ))}
       </div>
       <div className="vitals-icons" aria-hidden="true">
         {signals.map((sig) => (
-          <span key={sig.label} className={sig.outlier ? "outlier" : ""}>
+          <span key={sig.label} style={{ color: metrics[sig.metric].color }}>
             <MetricIcon metric={sig.metric} size={20} />
             <small>{sig.label}</small>
           </span>

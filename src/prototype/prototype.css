@@ -810,10 +810,15 @@
   margin-bottom: 8px;
 }
 
-/* Today: the four signals as vitals, after Apple Health. A grey band for the
-   usual range, lighter bands either side of it for outliers. */
+/* Today: the four signals as vitals, after Apple Health. A dark card with
+   a band for the usual range and fainter bands either side of it for outliers. */
 .card.vitals {
   gap: 0;
+  /* Dark, like the sleep card. */
+  background: #15001f;
+  color: #fff;
+  /* The mood purple is too dark to read here. */
+  --app-mood: #a98bf5;
 }
 
 .vitals-chart {
@@ -821,8 +826,6 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   height: 116px;
-  /* Room for the band labels, so no dot lands on one. */
-  padding-left: 64px;
 }
 
 .vitals-band {
@@ -830,44 +833,41 @@
   left: 0;
   right: 0;
   border-radius: 9px;
-  background: var(--app-fill);
-  display: flex;
-  align-items: center;
-  padding-left: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
+  background: rgb(255 255 255 / 0.08);
 }
 
 .vitals-band.high { top: 0; height: 20%; }
-.vitals-band.typical { top: 25%; height: 50%; background: #dadae1; }
+.vitals-band.typical { top: 25%; height: 50%; background: rgb(255 255 255 / 0.16); }
 .vitals-band.low { top: 80%; height: 20%; }
 
 .vitals-col {
   position: relative;
 }
 
-/* The same ring as the dots on the other charts; red once it is an outlier. */
-.vitals-dot {
+/* A tag where the signal sits, tinted with its text colour; red once it is
+   an outlier. The tints are opaque so they read on the grey bands. */
+.vitals-tag {
   position: absolute;
   left: 50%;
-  width: 18px;
-  height: 18px;
-  margin: -9px 0 0 -9px;
-  border: 4px solid #898b8c;
-  border-radius: 50%;
-  background: var(--app-card);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #4b3a53;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  color: #d9d0dd;
 }
 
-.vitals-dot.outlier {
-  border-color: var(--app-heart);
+.vitals-tag.outlier {
+  background: color-mix(in srgb, var(--app-heart) 30%, #15001f);
+  color: #ff8a82;
 }
 
 .vitals-icons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   margin-top: 12px;
-  padding-left: 64px;
 }
 
 .vitals-icons span {
@@ -879,17 +879,16 @@
 .vitals-icons small {
   font-size: 12px;
   font-weight: 600;
-  color: var(--muted);
 }
 
 .vitals-summary {
   display: grid;
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid var(--separator);
+  border-top: 1px solid rgb(255 255 255 / 0.14);
   font-size: 15px;
   font-weight: 600;
-  color: var(--muted);
+  color: #c1b4cc;
 }
 
 .vitals-summary strong {
@@ -897,7 +896,7 @@
   font-size: 34px;
   font-weight: 800;
   line-height: 1.1;
-  color: var(--foreground);
+  color: #fff;
 }
 
 .vitals-summary small {
