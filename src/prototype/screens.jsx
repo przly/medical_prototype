@@ -763,8 +763,11 @@ function Capture({ next }) {
 }
 
 // One sensor reading: how it sits against the baseline, a small chart of the
-// recent readings drifting from it, and the value now.
-function Reading({ metric, name, value, dir, values, baseline, band, children }) {
+// recent readings drifting from it, and the value now. `trend` says whether the
+// change is for the worse or the better, whichever way the number moved.
+const trendColors = { worse: "var(--app-heart)", better: "var(--app-positive)" };
+
+function Reading({ metric, name, value, dir, trend, amount, values, baseline, band, children }) {
   const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[dir];
   return (
     <li>
@@ -773,8 +776,11 @@ function Reading({ metric, name, value, dir, values, baseline, band, children })
           <MetricIcon metric={metric} size={16} />
           {name}
         </span>
-        <span className={`delta ${dir}`}>
-          <DirIcon size={14} strokeWidth={2.5} aria-hidden="true" />
+        <span className="reading-change">
+          <span className={`change-tag ${trend ?? ""}`}>
+            <DirIcon size={13} strokeWidth={2.75} aria-hidden="true" />
+            {amount}
+          </span>
           {children}
         </span>
       </span>
@@ -782,7 +788,7 @@ function Reading({ metric, name, value, dir, values, baseline, band, children })
         values={values}
         baseline={baseline}
         band={band}
-        color={metrics[metric].color}
+        color={trendColors[trend]}
         label={`${name}: recent readings against your baseline`}
       />
       <strong className="reading-value">{value}</strong>
@@ -825,21 +831,19 @@ function Structure({ next }) {
           <Tag kind="sensor">Sensor</Tag>
         </div>
         <ul className="readings">
-          <Reading metric="stress" name="Stress" value="High" dir="up" baseline={35} band={10} values={[33, 38, 34, 40, 52, 68]}>
-            Higher than usual
+          <Reading metric="stress" trend="worse" name="Stress" value="High" dir="up" baseline={35} band={10} values={[33, 38, 34, 40, 52, 68]} amount="Higher">
+            than usual
           </Reading>
-          <Reading metric="heart" name="Heart rate" value="74 bpm" dir="up" baseline={57} band={4} values={[58, 60, 57, 62, 68, 74]}>
-            17 above resting
+          <Reading metric="heart" trend="worse" name="Heart rate" value="74 bpm" dir="up" baseline={57} band={4} values={[58, 60, 57, 62, 68, 74]} amount="17">
+            above resting
           </Reading>
-          <Reading metric="hrv" name="HRV" value="36 ms" dir="down" baseline={48} band={4} values={[47, 49, 46, 44, 40, 36]}>
-            12 below baseline
+          <Reading metric="hrv" trend="worse" name="HRV" value="36 ms" dir="down" baseline={48} band={4} values={[47, 49, 46, 44, 40, 36]} amount="12">
+            below baseline
           </Reading>
-          <Reading metric="sleep" name="Sleep last night" value="5h 12m" dir="down" baseline={7} band={0.5} values={[7.1, 6.8, 7.2, 6.9, 6.6, 5.2]}>
-            1h 48m below baseline
+          <Reading metric="sleep" trend="worse" name="Sleep" value="5h 12m" dir="down" baseline={7} band={0.5} values={[7.1, 6.8, 7.2, 6.9, 6.6, 5.2]} amount="1h 48m">
+            below baseline
           </Reading>
-          <Reading metric="activity" name="Steps so far" value="3,240" dir="flat" baseline={3200} band={400} values={[3100, 3350, 3000, 3300, 3150, 3240]}>
-            As usual
-          </Reading>
+          <Reading metric="activity" name="Steps" value="3,240" dir="flat" baseline={3200} band={400} values={[3100, 3350, 3000, 3300, 3150, 3240]} amount="As usual" />
         </ul>
         <p className="card-foot">The band is your usual range, the dot is now.</p>
       </Card>

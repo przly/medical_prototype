@@ -1,5 +1,7 @@
 // Charts for the Today and weekly screens.
 
+import { useId } from "react";
+
 export function DotSpark({ values, color = "var(--app-activity)", label }) {
   const min = Math.min(...values);
   const range = Math.max(...values) - min || 1;
@@ -16,19 +18,30 @@ export function DotSpark({ values, color = "var(--app-activity)", label }) {
 }
 
 // Recent readings against the personal baseline: the band is the usual range,
-// the dashed line the baseline itself, and the coloured dot the latest reading.
-export function BaselineSpark({ values, baseline, band, color, label }) {
+// the dashed line the baseline itself, and the dot the latest reading. The
+// fill between the line and the baseline fades out at the baseline, in the
+// colour of the trend.
+export function BaselineSpark({ values, baseline, band, color = "#898b8c", label }) {
+  const fill = useId();
   const reach = Math.max(band, ...values.map((v) => Math.abs(v - baseline)));
-  const y = (v) => 20 - ((v - baseline) / reach) * 14;
+  const y = (v) => 28 - ((v - baseline) / reach) * 22;
   const points = values.map((v, i) => [5 + (i * 62) / (values.length - 1), y(v)]);
   const last = points[points.length - 1];
   const top = y(baseline + band);
   return (
-    <svg className="baseline-spark" viewBox="0 0 72 40" role="img" aria-label={label}>
+    <svg className="baseline-spark" viewBox="0 0 72 56" role="img" aria-label={label}>
       <rect x="0" y={top} width="72" height={y(baseline - band) - top} rx="4" className="dot-spark-band" />
-      <line x1="0" y1="20" x2="72" y2="20" className="baseline-spark-base" />
-      <polyline points={points.map((p) => p.join(",")).join(" ")} className="baseline-spark-line" />
-      <circle cx={last[0]} cy={last[1]} r="3.5" fill="var(--app-card)" stroke={color} strokeWidth="2.5" />
+      <defs>
+        <linearGradient id={fill} gradientUnits="userSpaceOnUse" x1="0" y1="6" x2="0" y2="50">
+          <stop offset="0" stopColor={color} stopOpacity="0.5" />
+          <stop offset="0.5" stopColor={color} stopOpacity="0" />
+          <stop offset="1" stopColor={color} stopOpacity="0.5" />
+        </linearGradient>
+      </defs>
+      <polygon points={[...points, [last[0], 28], [points[0][0], 28]].map((p) => p.join(",")).join(" ")} fill={`url(#${fill})`} />
+      <line x1="0" y1="28" x2="72" y2="28" className="baseline-spark-base" />
+      <polyline points={points.map((p) => p.join(",")).join(" ")} className="baseline-spark-line" style={{ stroke: color }} />
+      <circle cx={last[0]} cy={last[1]} r="3.5" className="baseline-spark-now" style={{ stroke: color }} />
     </svg>
   );
 }
