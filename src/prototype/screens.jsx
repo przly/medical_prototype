@@ -19,7 +19,9 @@ import {
   ClipboardList,
   Dumbbell,
   FileText,
+  Flame,
   FlaskConical,
+  Footprints,
   Frown,
   Headphones,
   Heart,
@@ -47,7 +49,7 @@ import {
   Waypoints,
   Zap,
 } from "lucide-react";
-import { BaselineSpark, DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
+import { ActivityBars, BaselineSpark, DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
 import appleHealthIcon from "../assets/apps/apple-health.jpg";
 import profileImage from "../assets/avatars/annie.jpg";
 import doctorImage from "../assets/avatars/doctor.jpg";
@@ -65,6 +67,8 @@ const metrics = {
   stress: { icon: Zap, color: "var(--app-stress)" },
   mood: { icon: Smile, color: "var(--app-mood)" },
   activity: { icon: Dumbbell, color: "var(--app-activity)" },
+  calories: { icon: Flame, color: "var(--app-calories)" },
+  steps: { icon: Footprints, color: "var(--app-activity)" },
 };
 
 // The companion's face: a soft square held by four corner brackets, with two
@@ -686,6 +690,7 @@ function SignalCards() {
             <Minus size={14} strokeWidth={2.5} aria-hidden="true" />
             workouts, as usual
           </span>
+          <ActivityBars />
         </Card>
       </div>
     </>
@@ -723,10 +728,20 @@ function Today({ next }) {
         <Tag kind="sensor">Sensor</Tag>
       </div>
       <div className="metric-tiles">
-        <MetricTile metric="sleep" value="7h 31m" unit="Sleep" status="Near baseline" values={[7.4, 6.6, 7.2, 6.5, 7.1, 7.4, 7.5]} />
+        <MetricTile metric="calories" value="412" unit="Calories" status="On track" values={[390, 430, 380, 420, 400, 440, 412]} />
         <MetricTile metric="hrv" value="48" unit="HRV · ms" status="Within range" values={[49, 45, 46, 43, 47, 49, 48]} />
-        <MetricTile metric="stress" value="Low" unit="Stress" status="Steady" values={[5, 3, 4, 6, 5, 4, 3]} />
+        <MetricTile metric="steps" value="3,240" unit="Steps" status="As usual" values={[3100, 3350, 3000, 3300, 3150, 3400, 3240]} />
       </div>
+      <Card className="metric-detail">
+        <Label metric="heart">Resting heart rate</Label>
+        <div className="metric-detail-row">
+          <div>
+            <div className="big-num">57 <small>bpm</small></div>
+            <span className="status-normal">Within range</span>
+          </div>
+          <DotSpark values={hr} label="Resting heart rate trend" />
+        </div>
+      </Card>
       <SignalCards />
     </Screen>
   );

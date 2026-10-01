@@ -238,6 +238,7 @@
   --app-stress: #f47d4d;
   --app-mood: #6842c7;
   --app-activity: #28c886;
+  --app-calories: #ff2d55;
   --app-positive: #087c53;
 
   /* Liquid Glass, iOS 27 flavour: a little more frosted than iOS 26. */
@@ -588,6 +589,8 @@
 .card-label.metric-stress, .metric-icon.metric-stress { color: var(--app-stress); }
 .card-label.metric-mood, .metric-icon.metric-mood { color: var(--app-mood); }
 .card-label.metric-activity, .metric-icon.metric-activity { color: var(--app-activity); }
+.card-label.metric-calories, .metric-icon.metric-calories { color: var(--app-calories); }
+.card-label.metric-steps, .metric-icon.metric-steps { color: var(--app-activity); }
 .insight-icon.metric-stress, .day-dots .metric-stress { color: var(--app-stress); }
 .insight-icon.metric-sleep, .day-dots .metric-sleep { color: var(--app-sleep); }
 .insight-icon.metric-activity, .day-dots .metric-activity { color: var(--app-activity); }
@@ -905,6 +908,26 @@
   margin-top: 2px;
 }
 
+.metric-detail-row {
+  display: grid;
+  grid-template-columns: 1fr 148px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.metric-detail .big-num {
+  font-size: 44px;
+  line-height: 1;
+}
+
+.status-normal {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .card.sleep-summary {
   background: #15001f;
   color: #fff;
@@ -955,6 +978,21 @@
 .sleep-bars small {
   font-size: 12px;
   color: #c1b4cc;
+}
+
+/* The same bars on a light card: workout days in green, the rest quiet. */
+.activity-bars span,
+.activity-bars > div:nth-child(even) span {
+  background: color-mix(in srgb, var(--app-activity) 28%, var(--app-card));
+}
+
+.activity-bars span.workout,
+.activity-bars > div:nth-child(even) span.workout {
+  background: var(--app-activity);
+}
+
+.activity-bars small {
+  color: var(--muted);
 }
 
 /* Tags distinguish sensor data from what the user reported. */

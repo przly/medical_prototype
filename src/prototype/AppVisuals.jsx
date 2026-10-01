@@ -78,3 +78,18 @@ export function SleepBars() {
     </div>
   );
 }
+
+// Active minutes per day. The three workout days stand out from the rest.
+export function ActivityBars() {
+  const minutes = [38, 12, 9, 41, 14, 35, 10];
+  return (
+    <div className="sleep-bars activity-bars" role="img" aria-label="Active minutes across the week: workouts on Monday, Thursday and Saturday, lighter days in between.">
+      {minutes.map((m, i) => (
+        <div key={i}>
+          <span className={m >= 30 ? "workout" : ""} style={{ height: `${m}px` }} />
+          <small>{["M", "T", "W", "T", "F", "S", "S"][i]}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
