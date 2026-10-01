@@ -16,7 +16,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Home",
+    verb: "Overview",
     layer: "body",
     icon: "pulse",
     when: "Weeks 1–4",
@@ -40,7 +40,7 @@ export const steps = [
   {
     verb: "Log details",
     layer: "ai",
-    icon: "tags",
+    icon: "mic",
     when: "Moments later",
     title: "His words become context",
     story: [
@@ -62,7 +62,7 @@ export const steps = [
     ],
   },
   {
-    verb: "Share",
+    verb: "Care",
     layer: "care",
     icon: "shield",
     when: "Before the appointment",

@@ -1244,6 +1244,63 @@
   color: var(--muted);
 }
 
+/* Building the insights: the companion, what it is doing, and how far along
+   it is, over the whole screen. */
+.insight-loader {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  /* The tab bar stays in view below. */
+  padding: 0 40px 87px;
+  background: var(--background);
+  text-align: center;
+}
+
+.insight-loader h4 {
+  margin: 12px 0 0;
+  font-family: var(--rounded);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* One line tall, so the bar below does not move as the text changes. */
+.loader-feedback {
+  height: 24px;
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.loader-bar {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.loader-bar .progress-bar__track {
+  height: 8px;
+  border-radius: 999px;
+}
+
+/* Moves evenly between the timer's ticks. */
+.loader-bar .progress-bar__fill {
+  border-radius: 999px;
+  transition: width 0.1s linear;
+}
+
+.loader-time {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Confirmation: a green capsule that drops in below the status bar. */
 .app-toast {
   position: absolute;
@@ -1768,8 +1825,49 @@
 /* ---------- Care: two perspectives ---------- */
 
 /* Trend rows: metric on the left, direction on the right. */
-.trends li {
-  justify-content: space-between;
+/* The doctor's trends: name and direction, the figure against its baseline,
+   then a full-width chart of the twelve weeks. */
+.doctor-trends {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: 17px;
+}
+
+.doctor-trends li {
+  padding: 14px 0;
+  border-top: 1px solid var(--separator);
+}
+
+.doctor-trends li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.doctor-trends .trend-name {
+  font-weight: 600;
+}
+
+.doctor-trends .change-tag {
+  font-size: 13px;
+}
+
+.trend-figures {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.trend-figures strong {
+  font-family: var(--rounded);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
 }
 
 .trend-name {
@@ -1948,19 +2046,16 @@
   box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
 }
 
-/* Regular glass button with a destructive label. */
+/* Destructive action: the primary button in red. */
 .phone .app-danger {
-  height: 50px;
-  --button-fg: var(--danger);
-  --button-bg: var(--glass-bg);
-  --button-bg-hover: var(--glass-bg);
-  --button-bg-pressed: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-edge), 0 2px 8px -2px rgb(0 0 0 / 0.1);
+  --button-fg: #fff;
+  --button-bg: var(--app-heart);
+  --button-bg-hover: var(--app-heart);
+  --button-bg-pressed: color-mix(in srgb, var(--app-heart) 88%, #000);
+  box-shadow: 0 3px 10px rgb(255 59 48 / 0.16);
 }
 
-/* Plain text button in the link colour: Skip, Not now, Revoke access. */
+/* Plain text button in the link colour: Skip, Not now, Stop sharing. */
 .phone .app-link {
   height: 44px;
   --button-fg: var(--app-link);

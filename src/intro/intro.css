@@ -1,7 +1,8 @@
 /* ---------- Intro scenes: the app's card language, on the page ---------- */
 
 .intro {
-  --late: var(--danger);
+  /* The app's trend colours: its bright red for worse, its green for better. */
+  --late: #ff3b30;
   --early: #28c886;
 
   /* Type scale: every size in the intro comes from these four. In rem, so
@@ -273,11 +274,22 @@
 .curve-mark {
   position: absolute;
   translate: -50% calc(-100% - 14px);
+  /* A tag, as on the app's charts. */
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--body-soft);
   font-size: var(--text-caption);
   font-weight: 600;
   line-height: 1.4;
   color: var(--body);
   white-space: nowrap;
+}
+
+.curve-mark.late {
+  /* Up and to the left, clear of the rising line. */
+  translate: calc(-100% - 6px) calc(-100% - 10px);
+  background: color-mix(in srgb, var(--late) 14%, var(--surface));
+  color: var(--danger);
 }
 
 /* Axis names: the vertical one at the top of its axis, the horizontal one
@@ -293,13 +305,13 @@
 .curve-y {
   position: absolute;
   top: 0;
-  left: 12px;
+  left: 0;
 }
 
-/* Outside the plot, so the plot keeps the chart's proportions; pulled up
-   to sit close under the axis. */
+/* Outside the plot, so the plot keeps the chart's proportions; it sits just
+   under the band. */
 .curve-x {
-  margin-top: -20px;
+  margin-top: 0;
   text-align: right;
 }
 
@@ -308,34 +320,51 @@
   width: 100%;
 }
 
-/* 4px on screen at any chart size, the same as the legend's samples. */
+/* 3px on screen at any chart size, the same as the legend's samples. */
 .curve path {
   fill: none;
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-linecap: round;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* The tinted area between a line and the baseline. */
+.curve path.curve-fill {
+  stroke: none;
 }
 
 .curve-late {
   stroke: var(--late);
 }
 
-/* Short dashes with round caps; the legend's sample uses the same pattern. */
 .curve-early {
   stroke: var(--early);
-  stroke-dasharray: 8 8;
 }
 
+/* The app's "now" dot: a ring in the line's colour around the card colour. */
 .curve-dot {
   fill: var(--surface);
   stroke: var(--early);
-  stroke-width: 4;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
 }
 
-/* 1px on screen at any chart size. */
-.curve-axis {
-  stroke: var(--border);
+.curve-dot.late {
+  stroke: var(--late);
+}
+
+/* The usual range, as a soft grey band along the bottom. */
+.curve-band {
+  fill: var(--default);
+  opacity: 0.6;
+}
+
+/* The baseline through it: 1px on screen, dashed. */
+.curve-base {
+  stroke: #c8c7ca;
   stroke-width: 1;
+  stroke-dasharray: 3 4;
   vector-effect: non-scaling-stroke;
 }
 
@@ -368,7 +397,7 @@
 }
 
 .curve-legend line {
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-linecap: round;
 }
 

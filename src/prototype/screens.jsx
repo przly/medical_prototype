@@ -865,12 +865,86 @@ function Reading({ metric, name, value, dir, trend, amount, values, baseline, ba
 }
 
 /* 04 · Structure — Log detail */
-function Structure({ next }) {
+// Building the insights takes a while, so the companion says what it is doing.
+// Each line shows for an equal share of the wait.
+const BUILD_MS = 20000;
+const buildSteps = [
+  "Reading your log…",
+  "Matching it with your sensor data…",
+  "Looking back over the last 12 weeks…",
+  "Comparing with your baseline…",
+  "Writing up what I noticed…",
+];
+
+function InsightLoader({ onDone }) {
+  const [elapsed, setElapsed] = useState(0);
+  const done = useRef(onDone);
+  done.current = onDone;
+
+  useEffect(() => {
+    const start = Date.now();
+    const tick = setInterval(() => {
+      const t = Date.now() - start;
+      setElapsed(Math.min(t, BUILD_MS));
+      if (t >= BUILD_MS) {
+        clearInterval(tick);
+        done.current();
+      }
+    }, 100);
+    return () => clearInterval(tick);
+  }, []);
+
+  const step = Math.min(buildSteps.length - 1, Math.floor((elapsed / BUILD_MS) * buildSteps.length));
+  const left = Math.ceil((BUILD_MS - elapsed) / 1000);
+
   return (
+    <motion.div
+      className="insight-loader"
+      role="status"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      <Speaker talking />
+      <h4>Building your insights</h4>
+      {/* Each line fades into the next. */}
+      <div className="loader-feedback">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.p
+            key={step}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+          >
+            {buildSteps[step]}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+      <ProgressBar aria-label="Building your insights" size="sm" className="loader-bar" value={(elapsed / BUILD_MS) * 100}>
+        <ProgressBar.Track>
+          <ProgressBar.Fill />
+        </ProgressBar.Track>
+      </ProgressBar>
+      <span className="loader-time">{left > 0 ? `About ${left} seconds left` : "Done"}</span>
+    </motion.div>
+  );
+}
+
+function Structure({ next }) {
+  const [building, setBuilding] = useState(false);
+
+  return (
+    <>
     <Screen
       eyebrow="Today, 16:42 · 20 sec"
       title="Log"
-      action={<Primary icon={Waypoints} onClick={next}>See insights</Primary>}
+      action={
+        <Primary icon={Waypoints} onClick={() => setBuilding(true)} disabled={building}>
+          See insights
+        </Primary>
+      }
     >
       <Card className="log-card">
         <div className="row-between">
@@ -917,6 +991,8 @@ function Structure({ next }) {
         <p className="card-foot">The band is your usual range, the dot is now.</p>
       </Card>
     </Screen>
+    <AnimatePresence>{building && <InsightLoader onDone={next} />}</AnimatePresence>
+    </>
   );
 }
 
@@ -974,7 +1050,9 @@ function Connect({ next }) {
       <motion.div className="ai-says" variants={item}>
         <Orb size={44} />
         <p>
-          I noticed <b>3 patterns</b> in your logs and sensor data.
+          I noticed <b>3 patterns</b>. Stress was higher on days with <b>work deadlines</b>,
+          and short nights left you tired. Over 12 weeks, your sleep and mood have drifted
+          below your baseline.
         </p>
       </motion.div>
       {insights.map((it, i) => (
@@ -1270,7 +1348,7 @@ function Share({ next, care, update }) {
               You can end access at any time.
             </Note>
             <Danger icon={ShieldOff} onClick={() => update({ access: "none" })}>
-              Revoke access
+              Stop sharing
             </Danger>
             <Quiet onClick={next}>
               Go to the appointment
@@ -1296,19 +1374,56 @@ function NoAccess({ revoked }) {
   );
 }
 
-function Trend({ metric, name, dir, children }) {
-  const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[dir];
+// What the doctor sees of each signal: twelve weekly averages against the
+// patient's baseline, with the latest figure beside the baseline it left.
+const signal = Object.fromEntries(rows.map((r) => [r.label, r]));
+
+const bodyTrends = [
+  { ...signal.Sleep, now: "6h 42m", base: "7h 30m" },
+  { ...signal.Stress, now: "58", base: "35" },
+  { label: "Resting heart rate", metric: "heart", dir: "up", trend: "worse", change: "Higher", baseline: 57, band: 2, v: [57, 58, 56, 57, 58, 57, 58, 59, 60, 61, 62, 63], now: "63 bpm", base: "57 bpm" },
+  { label: "HRV", metric: "hrv", dir: "down", trend: "worse", change: "Lower", baseline: 48, band: 3, v: [48, 49, 47, 48, 46, 47, 46, 44, 42, 40, 38, 36], now: "36 ms", base: "48 ms" },
+  { ...signal.Exercise, label: "Activity", now: "3 workouts", base: "3 a week" },
+];
+
+const wellbeingTrends = [
+  { ...signal.Mood, now: "3.1 of 5", base: "4.0" },
+  { label: "Energy", metric: "hrv", dir: "down", trend: "worse", change: "Lower", baseline: 3.8, band: 0.3, v: [3.9, 3.8, 4, 3.7, 3.8, 3.9, 3.6, 3.4, 3.3, 3.1, 3, 2.8], now: "2.8 of 5", base: "3.8" },
+];
+
+function TrendCharts({ trends }) {
   return (
-    <li>
-      <span className="trend-name">
-        <MetricIcon metric={metric} size={16} />
-        {name}
-      </span>
-      <span className={`delta ${dir}`}>
-        <DirIcon size={14} strokeWidth={2.5} aria-hidden="true" />
-        {children}
-      </span>
-    </li>
+    <ul className="doctor-trends">
+      {trends.map((t) => {
+        const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[t.dir];
+        return (
+          <li key={t.label}>
+            <div className="row-between">
+              <span className="trend-name">
+                <MetricIcon metric={t.metric} size={16} />
+                {t.label}
+              </span>
+              <span className={`change-tag ${t.trend ?? ""}`}>
+                <DirIcon size={13} strokeWidth={2.75} aria-hidden="true" />
+                {t.change}
+              </span>
+            </div>
+            <div className="trend-figures">
+              <strong>{t.now}</strong>
+              <span>baseline {t.base}</span>
+            </div>
+            <BaselineSpark
+              values={t.v}
+              baseline={t.baseline}
+              band={t.band}
+              color={trendColors[t.trend]}
+              width={300}
+              label={`${t.label} over the last 12 weeks: now ${t.now}, baseline ${t.base}`}
+            />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -1333,11 +1448,8 @@ function DoctorOverview({ next, care }) {
                 <span className="card-label">Body</span>
                 <Tag kind="sensor">Sensor</Tag>
               </div>
-              <ul className="facts trends">
-                <Trend metric="sleep" name="Sleep" dir="down">Lower</Trend>
-                <Trend metric="stress" name="Stress" dir="up">Higher</Trend>
-                <Trend metric="activity" name="Activity" dir="flat">Stable</Trend>
-              </ul>
+              <TrendCharts trends={bodyTrends} />
+              <p className="card-foot">Weekly averages. The band is the patient’s usual range.</p>
             </Card>
           )}
           {mood && (
@@ -1346,10 +1458,7 @@ function DoctorOverview({ next, care }) {
                 <span className="card-label">Wellbeing</span>
                 <Tag kind="you">Patient reported</Tag>
               </div>
-              <ul className="facts trends">
-                <Trend metric="mood" name="Mood" dir="flat">Stable</Trend>
-                <Trend metric="hrv" name="Energy" dir="down">Lower</Trend>
-              </ul>
+              <TrendCharts trends={wellbeingTrends} />
               <p className="card-foot">Work stress was mentioned more often.</p>
             </Card>
           )}
@@ -1567,7 +1676,7 @@ function PatientAccess({ care, update, restart }) {
               Keep sharing
             </Primary>
             <Quiet danger onClick={revoke}>
-              Revoke access
+              Stop sharing
             </Quiet>
           </>
         ) : (
@@ -1616,7 +1725,7 @@ function PatientAccess({ care, update, restart }) {
             You can change this at any time.
           </Note>
           <Danger icon={ShieldOff} onClick={revoke}>
-            Revoke access
+            Stop sharing
           </Danger>
         </div>
       )}

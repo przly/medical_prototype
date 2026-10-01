@@ -190,8 +190,21 @@ function Curve() {
     <MotionCard className="intro-card curve" variants={item}>
       <div className="curve-plot">
         <svg viewBox="0 0 640 240" role="img" aria-label="Illustration: a problem noticed late grows large, the same problem noticed early stays small.">
-          <line x1="1" y1="0" x2="1" y2="228" className="curve-axis" />
-          <line x1="0" y1="228" x2="640" y2="228" className="curve-axis" />
+          {/* The app's chart language: a grey band for the usual range, a dashed
+              baseline through it, and a fill between each line and the baseline
+              that grows stronger the further the line leaves it. */}
+          <defs>
+            <linearGradient id="curve-late-fill" gradientUnits="userSpaceOnUse" x1="0" y1="212" x2="0" y2="20">
+              <stop offset="0" style={{ stopColor: "var(--late)", stopOpacity: 0 }} />
+              <stop offset="1" style={{ stopColor: "var(--late)", stopOpacity: 0.4 }} />
+            </linearGradient>
+            <linearGradient id="curve-early-fill" gradientUnits="userSpaceOnUse" x1="0" y1="212" x2="0" y2="180">
+              <stop offset="0" style={{ stopColor: "var(--early)", stopOpacity: 0 }} />
+              <stop offset="1" style={{ stopColor: "var(--early)", stopOpacity: 0.45 }} />
+            </linearGradient>
+          </defs>
+          <rect x="0" y="192" width="640" height="40" rx="12" className="curve-band" />
+          <line x1="0" y1="212" x2="640" y2="212" className="curve-base" />
           {/* Both lines share one path until the problem is noticed (the dot):
               the early line is the first half of the late curve, then turns
               back down. The early line is drawn on top, so the late one
@@ -208,13 +221,20 @@ function Curve() {
             />
           </clipPath>
           <g clipPath="url(#curve-reveal)">
+            <path d="M0 212 C160 209 260 198 360 130 S520 31 640 23 L640 212 Z" className="curve-fill" style={{ fill: "url(#curve-late-fill)" }} />
+            <path
+              d="M0 212 C80 210.5 145 207 202.5 195.4 C237 188.4 400 200 640 206 L640 212 Z"
+              className="curve-fill"
+              style={{ fill: "url(#curve-early-fill)" }}
+            />
             <path d="M0 212 C160 209 260 198 360 130 S520 31 640 23" className="curve-late" />
             <path
               d="M0 212 C80 210.5 145 207 202.5 195.4 C237 188.4 400 200 640 206"
               className="curve-early"
             />
           </g>
-          <circle cx="202.5" cy="195.4" r="8" className="curve-dot" />
+          <circle cx="202.5" cy="195.4" r="7" className="curve-dot" />
+          <circle cx="360" cy="130" r="7" className="curve-dot late" />
         </svg>
         {/* Sits above the dot; positioned in the chart's own coordinates. */}
         <motion.span
@@ -225,6 +245,16 @@ function Curve() {
           transition={{ duration: 0.4, delay: 1 }}
         >
           Noticed
+        </motion.span>
+        {/* The same problem further along the red line, still not picked up. */}
+        <motion.span
+          className="curve-mark late"
+          style={{ left: `${(360 / 640) * 100}%`, top: `${(130 / 240) * 100}%` }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 1.2 }}
+        >
+          Unnoticed
         </motion.span>
         <span className="curve-y">Severity</span>
       </div>
