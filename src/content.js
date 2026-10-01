@@ -5,25 +5,25 @@
 // `verb` is the step's name in the step bar: what its screen is called in the app.
 export const steps = [
   {
-    verb: "Set up",
+    verb: "Onboarding",
     layer: "ai",
     icon: "user",
     when: "Day 1",
-    title: "Annie sets up the app",
+    title: "Felix sets up the app",
     story: [
-      "Annie is 34 and works as a project manager in Amsterdam. She installs the app after a colleague’s burnout.",
-      "She fills in the basics and connects her Apple Watch and AirPods. Medical records and family links are optional, so she can skip them for now.",
+      "Felix is 34 and works as a project manager in Amsterdam. He installs the app after a colleague’s burnout.",
+      "He fills in the basics and connects his Apple Watch and AirPods. Medical records and family links are optional, so he can skip them for now.",
     ],
   },
   {
-    verb: "Today",
+    verb: "Home",
     layer: "body",
     icon: "pulse",
     when: "Weeks 1–4",
-    title: "The watch learns what is normal for her",
+    title: "The watch learns what is normal for him",
     story: [
-      "Annie does nothing special. Her watch tracks sleep, heart rate and HRV in the background.",
-      "After a few weeks the app knows her personal baseline: about seven hours of sleep and a resting heart rate of 57. Today everything is within her usual range.",
+      "Felix does nothing special. His watch tracks sleep, heart rate and HRV in the background.",
+      "After a few weeks the app knows his personal baseline: about seven hours of sleep and a resting heart rate of 57. Today everything is within his usual range.",
     ],
   },
   {
@@ -31,10 +31,10 @@ export const steps = [
     layer: "context",
     icon: "mic",
     when: "Week 7 · Wednesday, 16:42",
-    title: "She says what the day was like",
+    title: "He says what the day was like",
     story: [
-      "A reorganisation has started at work. After a big presentation on very little sleep, Annie says “Log a thought” and talks for 20 seconds.",
-      "The app saves it and says nothing more. It records only because she asked it to.",
+      "A reorganisation has started at work. After a big presentation on very little sleep, Felix says “Log a thought” and talks for 20 seconds.",
+      "The app saves it and says nothing more. It records only because he asked it to.",
     ],
   },
   {
@@ -42,10 +42,10 @@ export const steps = [
     layer: "ai",
     icon: "tags",
     when: "Moments later",
-    title: "Her words become context",
+    title: "His words become context",
     story: [
-      "The app pulls the topics out of what she said: work, the presentation, poor sleep.",
-      "What Annie reported (stressed, tired) is kept apart from what the watch measured (higher stress, 5h 12m of sleep), so she can see which is which.",
+      "The app pulls the topics out of what he said: work, the presentation, poor sleep.",
+      "What Felix reported (stressed, tired) is kept apart from what the watch measured (higher stress, 5h 12m of sleep), so he can see which is which.",
     ],
   },
   {
@@ -55,8 +55,8 @@ export const steps = [
     when: "Weeks 5–10",
     title: "The two kinds of data start to line up",
     story: [
-      "As the weeks add up, the app notices things that keep happening together: higher stress on 4 of the 5 days she mentioned deadlines, and a better mood on days she exercised.",
-      "It tells her they happened together. It does not claim one caused the other.",
+      "As the weeks add up, the app notices things that keep happening together: higher stress on 4 of the 5 days he mentioned deadlines, and a better mood on days he exercised.",
+      "It tells him they happened together. It does not claim one caused the other.",
     ],
   },
   {
@@ -64,9 +64,9 @@ export const steps = [
     layer: "context",
     icon: "calendar",
     when: "Week 10 · Sunday evening",
-    title: "Her week in under a minute",
+    title: "His week in under a minute",
     story: [
-      "No alerts arrive during the week. On Sunday the weekly overview tells Annie what changed: more stress than usual, 48 minutes less sleep than her baseline, and work deadlines in most of her reflections.",
+      "No alerts arrive during the week. On Sunday the weekly overview tells Felix what changed: more stress than usual, 48 minutes less sleep than his baseline, and work deadlines in most of his reflections.",
     ],
   },
   {
@@ -76,8 +76,8 @@ export const steps = [
     when: "Week 11 · Thursday",
     title: "“I feel really bad”",
     story: [
-      "Annie logs that she is exhausted and her heart is racing, for the third day in a row. The pattern map shows what this feeling relates to in her data: short sleep has often come with higher stress and tiredness, and weeks with exercise with a better mood.",
-      "It has lasted more than two weeks and is well outside her usual range, so the app suggests discussing it with her GP. She taps “Prepare for my session”.",
+      "Felix logs that he is exhausted and his heart is racing, for the third day in a row. The pattern map shows what this feeling relates to in his data: short sleep has often come with higher stress and tiredness, and weeks with exercise with a better mood.",
+      "It has lasted more than two weeks and is well outside his usual range, so the app suggests discussing it with his GP. He taps “Prepare for my session”.",
     ],
   },
   {
@@ -85,10 +85,10 @@ export const steps = [
     layer: "care",
     icon: "shield",
     when: "Before the appointment",
-    title: "She decides what her GP sees",
+    title: "He decides what his GP sees",
     story: [
-      "Annie shares her trends, mood and goals with L. Visser, her GP, and keeps her voice transcripts private.",
-      "The moment she shares, the overview appears on the doctor’s phone. The GP reads twelve weeks in a minute instead of relying on what Annie remembers.",
+      "Felix shares his trends, mood and goals with Dr. Kikker, his GP, and keeps his voice transcripts private.",
+      "The moment he shares, the overview appears on the doctor’s phone. The GP reads twelve weeks in a minute instead of relying on what Felix remembers.",
     ],
   },
   {
@@ -98,8 +98,8 @@ export const steps = [
     when: "At the appointment · 10:30",
     title: "The GP asks before recording",
     story: [
-      "L. Visser would like to record the session for note-taking. The request appears on Annie’s phone and she decides.",
-      "Afterwards the GP sends her the summary and AI notes: protect her sleep, restart the lunchtime runs, check in again in three weeks. The GP, not the app, decides what the data means.",
+      "Dr. Kikker would like to record the session for note-taking. The request appears on Felix’s phone and he decides.",
+      "Afterwards the GP sends him the summary and AI notes: protect his sleep, restart the lunchtime runs, check in again in three weeks. The GP, not the app, decides what the data means.",
     ],
   },
   {
@@ -109,8 +109,8 @@ export const steps = [
     when: "After the appointment",
     title: "Keep sharing, or take it back",
     story: [
-      "Annie chooses. If she keeps sharing, the GP can follow her progress and send results such as a blood test.",
-      "If she revokes access, the doctor’s view locks straight away. What the GP already sent stays with her.",
+      "Felix chooses. If he keeps sharing, the GP can follow his progress and send results such as a blood test.",
+      "If he revokes access, the doctor’s view locks straight away. What the GP already sent stays with him.",
     ],
   },
 ];

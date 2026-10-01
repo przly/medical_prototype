@@ -169,34 +169,33 @@
   flex: none;
 }
 
+/* Whose phone it is, as a pill in the primary button's style: the same blue,
+   white label, weight and shadow, with the person's face at its start. */
 .phone-role {
   position: absolute;
-  top: -50px;
-  left: 0;
-  right: 0;
+  top: -52px;
+  left: 50%;
+  translate: -50% 0;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  font-size: 16px;
+  padding: 4px 18px 4px 4px;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
+  color: #fff;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1.4;
-  letter-spacing: 0;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
-/* Whose phone it is: the same face as in the app, with the same grey ring. */
 .phone-role img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 0 0 0.5px #c8c7ca;
 }
-
-.role-patient { color: var(--context); }
-.role-doctor { color: var(--care); }
 
 .proto-explain {
   width: 100%;
@@ -1126,8 +1125,17 @@
   white-space: nowrap;
 }
 
-.src-tag.sensor, .src-tag.airpods { background: var(--app-fill); color: var(--muted); }
-.src-tag.you { background: var(--context-soft); color: var(--context); }
+.src-tag.sensor, .src-tag.airpods { background: var(--foreground); color: #fff; }
+.src-tag.you { background: var(--brand); color: #fff; }
+
+/* The patient's face at the start of the tag, tucked into its rounded end. */
+.src-tag img {
+  width: 16px;
+  height: 16px;
+  margin-left: -5px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .src-tag.pos { background: var(--body-soft); color: var(--app-positive); }
 .src-tag.neutral { background: var(--app-fill); color: var(--muted); }
 
@@ -1249,9 +1257,9 @@
   border-radius: 999px;
   translate: -50% 0;
   white-space: nowrap;
-  background: var(--body-soft);
-  color: var(--app-positive);
-  box-shadow: 0 8px 28px -8px rgb(8 124 83 / 0.3), 0 1px 3px rgb(0 0 0 / 0.04);
+  background: var(--app-positive);
+  color: #fff;
+  box-shadow: 0 8px 28px -8px rgb(8 124 83 / 0.45), 0 1px 3px rgb(0 0 0 / 0.04);
   font-size: 15px;
   font-weight: 600;
 }
@@ -1444,7 +1452,7 @@
   gap: 12px;
 }
 
-/* Where the insight comes from: the sensor reading, then her own words. */
+/* Where the insight comes from: the sensor reading, then his own words. */
 .insight-sources {
   list-style: none;
   margin: 14px 0 0;

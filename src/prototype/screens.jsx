@@ -8,7 +8,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   AudioLines,
-  Baby,
   Brain,
   Briefcase,
   CalendarDays,
@@ -52,7 +51,7 @@ import {
 import { BlueBlob } from "./BlueBlob.jsx";
 import { ActivityBars, BaselineSpark, DotSpark, SleepBars } from "./AppVisuals.jsx";
 import appleHealthIcon from "../assets/apps/apple-health.jpg";
-import profileImage from "../assets/avatars/annie.jpg";
+import profileImage from "../assets/avatars/felix.jpg";
 import doctorImage from "../assets/avatars/doctor.jpg";
 import lifesumIcon from "../assets/apps/lifesum.jpg";
 import myFitnessPalIcon from "../assets/apps/myfitnesspal.jpg";
@@ -329,9 +328,9 @@ function ProfileButton({ image, initials, name }) {
   );
 }
 
-// Whose phone it is: Annie's on the patient side, the GP's on the doctor side.
-const patientProfile = <ProfileButton image={profileImage} initials="AK" name="Annie Koster" />;
-const doctorProfile = <ProfileButton image={doctorImage} initials="LV" name="L. Visser" />;
+// Whose phone it is: Felix's on the patient side, the GP's on the doctor side.
+const patientProfile = <ProfileButton image={profileImage} initials="FT" name="Felix Thickett" />;
+const doctorProfile = <ProfileButton image={doctorImage} initials="DK" name="Dr. Kikker" />;
 
 function MetricTile({ metric, value, unit, values, status }) {
   return (
@@ -345,12 +344,14 @@ function MetricTile({ metric, value, unit, values, status }) {
 }
 
 // Tags say where a piece of information came from.
-const tagIcons = { sensor: Watch, you: User, pos: Sprout, neutral: Repeat, airpods: Headphones };
+// What the patient reported carries his own face instead of an icon.
+const tagIcons = { sensor: Watch, pos: Sprout, neutral: Repeat, airpods: Headphones };
 
 function Tag({ kind, children }) {
   const TagIcon = tagIcons[kind];
   return (
     <span className={`src-tag ${kind}`}>
+      {kind === "you" && <img src={profileImage} alt="" />}
       {TagIcon && <TagIcon size={11} strokeWidth={2.5} aria-hidden="true" />}
       {children}
     </span>
@@ -371,9 +372,9 @@ const setup = [
         label: "Personal data",
         control: "value",
         rows: [
-          ["Name", User, "Annie Koster"],
+          ["Name", User, "Felix Thickett"],
           ["Age", CalendarDays, "34"],
-          ["Gender", Users, "Woman"],
+          ["Gender", Users, "Man"],
           ["Chronic condition", Activity, "None"],
         ],
       },
@@ -381,7 +382,6 @@ const setup = [
         label: "Right now",
         control: "switch",
         rows: [
-          ["Pregnant", Baby],
           ["Physical disability", Accessibility],
         ],
       },
@@ -934,7 +934,7 @@ function Structure({ next }) {
 
 /* 05 · Connect — associations */
 // Each insight is one plain sentence and how often it held: `n` of `of` days.
-// Under it sit its two sources: what the sensors measured and what she said.
+// Under it sit its two sources: what the sensors measured and what he said.
 const insights = [
   {
     metric: "stress",
@@ -1157,7 +1157,7 @@ export const initialCare = {
 
 const visit = {
   forDoctor:
-    "Annie described three weeks of short sleep and evening work. Agreed to protect sleep and restart lunchtime runs.",
+    "Felix described three weeks of short sleep and evening work. Agreed to protect sleep and restart lunchtime runs.",
   forPatient:
     "You described three weeks of short sleep and evening work. You agreed to protect your sleep and restart lunchtime runs.",
   goals: ["In bed by 23:00 on work nights", "Two lunchtime runs a week", "Check in again in 3 weeks"],
@@ -1293,7 +1293,7 @@ function Share({ next, care, update }) {
         )
       }
     >
-      <Person initials="LV" name="L. Visser" sub="GP · appointment today, 10:30" image={doctorImage} />
+      <Person initials="DK" name="Dr. Kikker" sub="GP · appointment today, 10:30" image={doctorImage} />
       <Card>
         <span className="card-label">What they’ll see</span>
         <ul className="toggles">
@@ -1334,7 +1334,7 @@ function Share({ next, care, update }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
           >
-            <Note icon={CircleCheck} status="success" title="Shared with L. Visser">
+            <Note icon={CircleCheck} status="success" title="Shared with Dr. Kikker">
               You can end access at any time.
             </Note>
             <Danger icon={ShieldOff} onClick={() => update({ access: "none" })}>
@@ -1388,7 +1388,7 @@ function DoctorOverview({ next, care }) {
   return (
     <Screen
       eyebrow={shared ? "Shared overview · last 12 weeks" : "Patient"}
-      title="Annie Koster"
+      title="Felix Thickett"
       trailing={doctorProfile}
       action={shared && <Primary icon={ArrowRight} onClick={next}>Start the session</Primary>}
     >
@@ -1485,18 +1485,18 @@ function PatientSession({ next, care, update }) {
 
   return (
     <Screen eyebrow="Today, 10:30" title="Appointment" trailing={patientProfile} action={actions[state]}>
-      <Person initials="LV" name="L. Visser" sub="GP · in session now" image={doctorImage} />
+      <Person initials="DK" name="Dr. Kikker" sub="GP · in session now" image={doctorImage} />
       {state === "idle" && (
         <Note icon={ShieldCheck} status="success">
           {care.access === "shared"
-            ? "L. Visser can see the overview you shared. Nothing is being recorded."
+            ? "Dr. Kikker can see the overview you shared. Nothing is being recorded."
             : "You haven’t shared an overview. Nothing is being recorded."}
         </Note>
       )}
       {state === "asked" && (
         <Card>
           <Label icon={Mic}>Recording request</Label>
-          <p className="ask">L. Visser asks to record this session.</p>
+          <p className="ask">Dr. Kikker asks to record this session.</p>
           <p className="card-foot">
             The recording is for the doctor’s notes. You get the summary and AI notes afterwards.
           </p>
@@ -1524,7 +1524,7 @@ function PatientSession({ next, care, update }) {
             <Orb size={36} />
             <div>
               <p>Recording ended</p>
-              <span>L. Visser can send you the summary and AI notes.</span>
+              <span>Dr. Kikker can send you the summary and AI notes.</span>
             </div>
           </Card>
         ))}
@@ -1558,18 +1558,18 @@ function DoctorSession({ next, care, update }) {
           update({ notes: true });
         }}
       >
-        Send summary to Annie
+        Send summary to Felix
       </Primary>
     ),
   };
 
   return (
     <Screen eyebrow="Today, 10:30" title="Session" trailing={doctorProfile} action={actions[state]}>
-      <Person initials="AK" name="Annie Koster" sub="34 · in session now" image={profileImage} />
+      <Person initials="FT" name="Felix Thickett" sub="34 · in session now" image={profileImage} />
       {state === "idle" && (
         <Card>
           <Label icon={Mic}>Record this session?</Label>
-          <p className="ask">Ask Annie before you record.</p>
+          <p className="ask">Ask Felix before you record.</p>
           <p className="card-foot">
             The recording is for your notes. The summary and AI notes can be shared with the patient.
           </p>
@@ -1580,7 +1580,7 @@ function DoctorSession({ next, care, update }) {
           <Orb size={36} />
           <div>
             <p>Request sent</p>
-            <span>Annie sees it on their phone and decides.</span>
+            <span>Felix sees it on their phone and decides.</span>
           </div>
         </Card>
       )}
@@ -1594,7 +1594,7 @@ function DoctorSession({ next, care, update }) {
         </>
       )}
       {state === "declined" && (
-        <Note icon={ShieldCheck}>Annie chose not to record. Take notes as usual.</Note>
+        <Note icon={ShieldCheck}>Felix chose not to record. Take notes as usual.</Note>
       )}
       {state === "done" && (
         <>
@@ -1602,7 +1602,7 @@ function DoctorSession({ next, care, update }) {
           {care.notes && (
             <p className="hint">
               <Lock size={13} strokeWidth={2.25} aria-hidden="true" />
-              Sent to Annie, encrypted.
+              Sent to Felix, encrypted.
             </p>
           )}
         </>
@@ -1644,9 +1644,9 @@ function PatientAccess({ care, update, restart }) {
       }
     >
       <Person
-        initials="LV"
+        initials="DK"
         image={doctorImage}
-        name="L. Visser"
+        name="Dr. Kikker"
         sub={shared ? "GP · has access since today" : "GP · no access"}
       />
       {shared ? (
@@ -1656,12 +1656,12 @@ function PatientAccess({ care, update, restart }) {
         </Card>
       ) : (
         <Notice icon={ShieldOff} title={care.access === "revoked" ? "Access ended" : "Not sharing"}>
-          L. Visser can’t see your data. Summaries and results they sent stay with you.
+          Dr. Kikker can’t see your data. Summaries and results they sent stay with you.
         </Notice>
       )}
       {(care.notes || care.results) && (
         <Card>
-          <span className="card-label">From L. Visser</span>
+          <span className="card-label">From Dr. Kikker</span>
           <ul className="facts">
             {care.notes && (
               <li>
@@ -1680,7 +1680,7 @@ function PatientAccess({ care, update, restart }) {
       )}
       {shared && care.kept && (
         <div className="shared-state">
-          <Note icon={CircleCheck} status="success" title="Still sharing with L. Visser">
+          <Note icon={CircleCheck} status="success" title="Still sharing with Dr. Kikker">
             You can change this at any time.
           </Note>
           <Danger icon={ShieldOff} onClick={revoke}>
@@ -1707,7 +1707,7 @@ function DoctorAccess({ care, update }) {
   ];
 
   return (
-    <Screen eyebrow="Patient record" title="Annie Koster" trailing={doctorProfile}>
+    <Screen eyebrow="Patient record" title="Felix Thickett" trailing={doctorProfile}>
       {shared ? (
         <>
           <Note icon={ShieldCheck} status="success">

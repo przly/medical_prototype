@@ -6,7 +6,7 @@ import Icon from "../Icon.jsx";
 import { steps } from "../content.js";
 import { DOCTOR_FROM, doctorScreens, initialCare, screens, spring } from "./screens.jsx";
 import phoneFrame from "../assets/device/iphone-frame.png";
-import patientImage from "../assets/avatars/annie.jpg";
+import patientImage from "../assets/avatars/felix.jpg";
 import doctorImage from "../assets/avatars/doctor.jpg";
 import "./prototype.css";
 
