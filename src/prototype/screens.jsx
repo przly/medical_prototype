@@ -656,12 +656,20 @@ function SignalCards() {
 // The four signals at a glance, after the Vitals view in Apple Health: one tag
 // per signal, inside the middle band while it is in its usual range and out in
 // an outer band once it has left it.
+// Where each signal sits today: `z` is its distance from the baseline, in usual
+// ranges. `better` marks an outlier that is good news.
+const todaySignals = [
+  { label: "Sleep", metric: "sleep", z: 0.3 },
+  { label: "Stress", metric: "stress", z: -2, better: true },
+  { label: "Mood", metric: "mood", z: 2, better: true },
+  { label: "Exercise", metric: "activity", z: -0.2 },
+];
+
 function Vitals() {
-  const signals = rows.map((r) => {
-    // How far the latest week sits from the baseline, in usual ranges.
-    const z = (r.v[r.v.length - 1] - r.baseline) / r.band;
+  const signals = todaySignals.map((r) => {
+    const { z } = r;
     const outlier = Math.abs(z) > 1;
-    // Outliers sit in the middle of their band; the rest spread across the blue one.
+    // Outliers sit in the middle of their band; the rest spread across the middle one.
     const y = outlier ? (z > 0 ? 10 : 90) : 50 - z * 18;
     return { ...r, outlier, y, state: outlier ? (z > 0 ? "High" : "Low") : "Normal" };
   });
@@ -680,7 +688,7 @@ function Vitals() {
         {signals.map((sig, i) => (
           <div key={sig.label} className="vitals-col">
             <motion.span
-              className={`vitals-tag ${sig.outlier ? "outlier" : ""}`}
+              className={`vitals-tag ${sig.outlier ? (sig.better ? "better" : "outlier") : ""}`}
               style={{ top: `${sig.y}%`, x: "-50%", y: "-50%" }}
               initial={{ scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -704,7 +712,7 @@ function Vitals() {
         <strong>
           {outliers} {outliers === 1 ? "Outlier" : "Outliers"}
         </strong>
-        <small>Last 12 weeks</small>
+        <small>Compared with your baseline</small>
       </div>
     </Card>
   );
@@ -1066,8 +1074,7 @@ function Weekly({ next }) {
 
 /* 07 · Learn — Pattern map */
 // Twelve weekly values per signal, against its baseline and usual range. The
-// first weeks sit inside the range; the last five drift away from it. Today
-// shows the same four side by side.
+// first weeks sit inside the range; the last five drift away from it.
 const rows = [
   { label: "Sleep", metric: "sleep", dir: "down", trend: "worse", change: "Lower", baseline: 7.5, band: 0.25, v: [7.5, 7.4, 7.6, 7.5, 7.3, 7.5, 7.4, 7.2, 7.1, 6.9, 6.8, 6.7] },
   { label: "Stress", metric: "stress", dir: "up", trend: "worse", change: "Higher", baseline: 35, band: 6, v: [34, 36, 33, 35, 37, 34, 38, 41, 45, 48, 53, 58] },

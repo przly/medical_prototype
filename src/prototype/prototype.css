@@ -864,6 +864,11 @@
   color: #ff8a82;
 }
 
+.vitals-tag.better {
+  background: color-mix(in srgb, var(--app-activity) 30%, #15001f);
+  color: #6fe0ad;
+}
+
 .vitals-icons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
