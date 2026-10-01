@@ -23,7 +23,6 @@ const doctorTabs = [
   { label: "Session", icon: "chat", step: 8, owns: [8] },
   { label: "Access", icon: "key", step: 9, owns: [9] },
 ];
-const DOCTOR_TINT = "#007aff";
 
 // Where a flick would come to rest, using Apple's scroll deceleration.
 const project = (velocity, rate = 0.998) => ((velocity / 1000) * rate) / (1 - rate);
@@ -87,12 +86,8 @@ function StatusBar() {
   );
 }
 
-// One accent per layer, shared by the in-app wash and the glow behind the phone.
-// iOS system colours: green, orange, indigo, purple.
-const tints = { body: "#34c759", context: "#ff9500", ai: "#5856d6", care: "#af52de" };
-
 // One device. The patient's and the doctor's phones differ only in what they're given.
-function Phone({ className = "", screens, offset = 0, tabs, hideTabs, tint, active, dir, go, min, max, screenProps }) {
+function Phone({ name, screens, offset = 0, tabs, hideTabs, active, dir, go, min, max, screenProps }) {
   const ScreenComponent = screens[active - offset];
   const first = active === min;
   const last = active === max;
@@ -106,8 +101,8 @@ function Phone({ className = "", screens, offset = 0, tabs, hideTabs, tint, acti
 
   return (
     // The app inside the phone stays light whatever the page theme.
-    <div className={`phone ${className}`} data-theme="light">
-      <div className="phone-screen" style={{ "--tint": tint }}>
+    <div className="phone" data-theme="light">
+      <div className="phone-screen">
         <StatusBar />
         <div className="viewport">
           <AnimatePresence initial={false} custom={dir} mode="popLayout">
@@ -135,30 +130,31 @@ function Phone({ className = "", screens, offset = 0, tabs, hideTabs, tint, acti
         {/* Onboarding runs full screen; the tab bar arrives with the app itself. */}
         <AnimatePresence initial={false}>
           {!hideTabs && (
-            <motion.div
+            <motion.nav
               className="tabbar"
+              aria-label="App sections"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 24 }}
               transition={spring}
             >
-              <Tabs
-                selectedKey={tabs.find((t) => t.owns.includes(active))?.label}
-                onSelectionChange={(label) => go(tabs.find((t) => t.label === label).step)}
-              >
-                <Tabs.ListContainer>
-                  <Tabs.List aria-label="App sections">
-                    {tabs.map((t) => (
-                      <Tabs.Tab key={t.label} id={t.label} className="h-auto flex-col gap-0.5 py-1.5 text-xs">
-                        <Icon name={t.icon} size={22} />
-                        {t.label}
-                        <Tabs.Indicator />
-                      </Tabs.Tab>
-                    ))}
-                  </Tabs.List>
-                </Tabs.ListContainer>
-              </Tabs>
-            </motion.div>
+              {tabs.map((t) => {
+                const on = t.owns.includes(active);
+                return (
+                  <button
+                    key={t.label}
+                    className={on ? "on" : ""}
+                    onClick={() => go(t.step)}
+                    aria-current={on ? "page" : undefined}
+                  >
+                    {/* The selection lens glides between tabs; one per phone. */}
+                    {on && <motion.span layoutId={`tab-lens-${name}`} className="tab-lens" transition={spring} />}
+                    <Icon name={t.icon} size={24} />
+                    <span>{t.label}</span>
+                  </button>
+                );
+              })}
+            </motion.nav>
           )}
         </AnimatePresence>
         <span className="home-indicator" aria-hidden="true" />
@@ -229,8 +225,6 @@ export default function LoopPrototype({ onBack }) {
     in: { opacity: 1, width: PHONE_W * scale, height: PHONE_H * scale },
     out: { opacity: 0, width: 0, height: PHONE_H * scale },
   };
-
-  const tint = tints[step.layer];
 
   // Steps are as wide as their labels, so the active one is measured: the row
   // shifts until it is centred and the highlight takes its width.
@@ -327,10 +321,10 @@ export default function LoopPrototype({ onBack }) {
               >
                 {both && <span className="phone-role role-patient">Patient</span>}
                 <Phone
+                  name="patient"
                   screens={screens}
                   tabs={tabs}
                   hideTabs={active === 0}
-                  tint={tint}
                   active={active}
                   dir={dir}
                   go={go}
@@ -351,10 +345,10 @@ export default function LoopPrototype({ onBack }) {
               >
                 {both && <span className="phone-role role-doctor">Doctor</span>}
                 <Phone
+                  name="doctor"
                   screens={doctorScreens}
                   offset={DOCTOR_FROM}
                   tabs={doctorTabs}
-                  tint={DOCTOR_TINT}
                   // Stays on its first screen while it slides away.
                   active={Math.max(active, DOCTOR_FROM)}
                   dir={dir}
@@ -378,18 +372,19 @@ export default function LoopPrototype({ onBack }) {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease }}
           >
-            <span className="proto-num">{step.when}</span>
+            <span className="proto-when">{step.when}</span>
             <h3>{step.title}</h3>
             {step.story.map((para) => (
               <p key={para}>{para}</p>
             ))}
           </motion.div>
         </AnimatePresence>
-        <p className="proto-hint">
-          {dual
-            ? "Both phones are live: what the patient does shows up on the doctor’s side, and the other way round."
-            : "Tap the buttons inside the phone to move through the flow."}
-        </p>
+        {dual && (
+          <p className="proto-hint">
+            Both phones are live: what the patient does shows up on the doctor’s
+            side, and the other way round.
+          </p>
+        )}
       </div>
     </div>
   );

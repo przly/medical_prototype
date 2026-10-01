@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
-import { Alert, Avatar, Button, Card as HeroCard, Chip, Meter, ProgressBar, Switch } from "@heroui/react";
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from "motion/react";
+import { Avatar, Button, Card as HeroCard, ProgressBar } from "@heroui/react";
 import {
   Accessibility,
   Activity,
-  Apple,
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
@@ -33,7 +32,6 @@ import {
   Presentation,
   Repeat,
   RotateCcw,
-  Salad,
   Send,
   ShieldCheck,
   ShieldOff,
@@ -45,11 +43,16 @@ import {
   TrendingUp,
   User,
   Users,
-  Utensils,
   Watch,
   Waypoints,
   Zap,
 } from "lucide-react";
+import { DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
+import appleHealthIcon from "../assets/apps/apple-health.jpg";
+import profileImage from "../assets/avatars/blue.jpg";
+import lifesumIcon from "../assets/apps/lifesum.jpg";
+import myFitnessPalIcon from "../assets/apps/myfitnesspal.jpg";
+import yazioIcon from "../assets/apps/yazio.jpg";
 
 const iconProps = { size: 18, strokeWidth: 2.25, "aria-hidden": true };
 
@@ -63,8 +66,87 @@ const metrics = {
   activity: { icon: Dumbbell, color: "var(--app-activity)" },
 };
 
-// The companion's mark: a small version of the voice orb. It appears wherever
-// the app is noticing something on your behalf.
+// The companion's face: a soft square held by four corner brackets, with two
+// dot eyes and a small smile. The eyes and mouth lean toward the cursor, and
+// the eyes blink now and then. Drawn as an SVG so the same face scales from the
+// small mark to the large recorder.
+const LOOK_MAX = 9; // how far the features travel, in viewBox units
+const LOOK_REACH = 240; // cursor distance in px at which they reach that limit
+
+function Eyes({ talking = false }) {
+  const ref = useRef(null);
+  const lookX = useSpring(0, { bounce: 0, duration: 0.4 });
+  const lookY = useSpring(0, { bounce: 0, duration: 0.4 });
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const follow = (e) => {
+      const box = ref.current?.getBoundingClientRect();
+      if (!box) return;
+      const dx = e.clientX - (box.left + box.width / 2);
+      const dy = e.clientY - (box.top + box.height / 2);
+      const dist = Math.hypot(dx, dy) || 1;
+      const reach = (Math.min(dist, LOOK_REACH) / LOOK_REACH) * LOOK_MAX;
+      lookX.set((dx / dist) * reach);
+      lookY.set((dy / dist) * reach);
+    };
+    window.addEventListener("pointermove", follow);
+    return () => window.removeEventListener("pointermove", follow);
+  }, [lookX, lookY]);
+
+  return (
+    <svg ref={ref} className="face" viewBox="0 0 100 100" aria-hidden="true">
+      <rect className="face-fill" x="6" y="6" width="88" height="88" rx="22" />
+      <path
+        className="face-frame"
+        d="M6 38 V28 A22 22 0 0 1 28 6 H38 M62 6 H72 A22 22 0 0 1 94 28 V38 M94 62 V72 A22 22 0 0 1 72 94 H62 M38 94 H28 A22 22 0 0 1 6 72 V62"
+      />
+      <motion.g style={{ x: lookX, y: lookY }}>
+        <motion.g
+          animate={{ scaleY: [1, 1, 0.1, 1] }}
+          transition={{ duration: 4, times: [0, 0.93, 0.965, 1], repeat: Infinity, ease: "easeInOut" }}
+        >
+          <circle className="face-eye" cx="33" cy="44" r="4.5" />
+          <circle className="face-eye" cx="67" cy="44" r="4.5" />
+        </motion.g>
+        {talking ? (
+          <motion.ellipse
+            className="face-mouth-open"
+            cx="50"
+            cy="62"
+            rx="7"
+            initial={{ ry: 2 }}
+            animate={{ ry: [2, 7, 3, 8, 2.5, 6, 2] }}
+            transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ) : (
+          <path className="face-mouth" d="M39 59 Q50 67 61 59" />
+        )}
+      </motion.g>
+    </svg>
+  );
+}
+
+// The large companion on the recorder. While it is speaking it bobs and tilts
+// a little and its mouth opens and closes; otherwise it rests with a smile.
+function Speaker({ talking }) {
+  return (
+    <motion.div
+      className="orb"
+      animate={talking ? { y: [0, -4, 0, -2, 0], rotate: [0, -3, 2, -2, 0] } : { y: 0, rotate: 0 }}
+      transition={
+        talking
+          ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" }
+          : { type: "spring", bounce: 0, duration: 0.4 }
+      }
+    >
+      <Eyes talking={talking} />
+    </motion.div>
+  );
+}
+
+// The companion's mark: a small version of the recorder dot. It appears
+// wherever the app is noticing something on your behalf.
 export function Orb({ size = 28 }) {
   return (
     <motion.span
@@ -74,22 +156,22 @@ export function Orb({ size = 28 }) {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", bounce: 0.35, duration: 0.6, delay: 0.25 }}
       aria-hidden="true"
-    />
+    >
+      <Eyes />
+    </motion.span>
   );
 }
 
+// A metric's icon, solid and in the metric's colour wherever it appears.
 function MetricIcon({ metric, size = 14 }) {
-  const { icon: M, color } = metrics[metric];
-  return <M size={size} strokeWidth={2.25} color={color} aria-hidden="true" />;
+  const { icon: M } = metrics[metric];
+  return <M className={`metric-icon metric-${metric}`} size={size} strokeWidth={2.25} aria-hidden="true" />;
 }
 
-// Card heading in the Health app style: icon and name in the metric's colour.
+// Card heading with an icon. A metric heading takes its metric's colour.
 function Label({ metric, icon: I, children }) {
   return (
-    <span
-      className="card-label with-icon"
-      style={metric ? { color: metrics[metric].color } : undefined}
-    >
+    <span className={`card-label with-icon ${metric ? `metric-${metric}` : ""}`}>
       {metric ? <MetricIcon metric={metric} size={16} /> : I && <I size={16} strokeWidth={2.25} aria-hidden="true" />}
       {children}
     </span>
@@ -115,18 +197,35 @@ const item = {
 
 // iOS navigation: a large title that hands over to a compact inline title,
 // with a soft scroll-edge blur (no hard bar) once content moves under it.
-function Screen({ eyebrow, title, trailing, action, full, children }) {
+function Screen({ eyebrow, title, leading, trailing, action, full, hero, heroHeight = 136, className = "", children }) {
   const scrollRef = useRef(null);
   const { scrollY } = useScroll({ container: scrollRef });
-  const barOpacity = useTransform(scrollY, [24, 48], [0, 1]);
+  // With a hero above it, the title reaches the bar that much later.
+  const titleOffset = hero ? heroHeight : 0;
+  const barOpacity = useTransform(scrollY, [titleOffset + 24, titleOffset + 48], [0, 1]);
   const titleScale = useTransform(scrollY, [-80, 0], [1.08, 1]);
   // The large title fades as it slides under the bar, handing over to the inline one.
-  const titleOpacity = useTransform(scrollY, [8, 40], [1, 0]);
+  const titleOpacity = useTransform(scrollY, [titleOffset + 8, titleOffset + 40], [1, 0]);
 
   return (
-    <div className={`screen-inner ${full ? "screen-full" : ""}`}>
+    <div className={`screen-inner ${full ? "screen-full" : ""} ${className}`}>
       <motion.div className="scroll-edge" style={{ opacity: barOpacity }} aria-hidden="true" />
       <div className="navbar">
+        {/* The bar is laid over the content, so a button here never moves it. */}
+        <AnimatePresence initial={false}>
+          {leading && (
+            <motion.div
+              key="leading"
+              className="navbar-leading"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={spring}
+            >
+              {leading}
+            </motion.div>
+          )}
+        </AnimatePresence>
         <motion.span className="navbar-title" style={{ opacity: barOpacity }}>
           {title}
         </motion.span>
@@ -139,8 +238,9 @@ function Screen({ eyebrow, title, trailing, action, full, children }) {
         initial="initial"
         animate="animate"
       >
+        {hero}
         <motion.header className="app-head" variants={item}>
-          <span className="app-eyebrow">{eyebrow}</span>
+          {eyebrow && <span className="app-eyebrow">{eyebrow}</span>}
           <motion.h4 className="app-title" style={{ scale: titleScale, opacity: titleOpacity }}>
             {title}
           </motion.h4>
@@ -165,7 +265,7 @@ function Screen({ eyebrow, title, trailing, action, full, children }) {
   );
 }
 
-// HeroUI components in their default styling; these wrappers only add the
+// HeroUI components, restyled in prototype.css; these wrappers add the
 // staggered entrance and the icon slot the screens share.
 const MotionCard = motion.create(HeroCard);
 
@@ -178,17 +278,20 @@ function Card({ children, className = "", ...rest }) {
 }
 
 function Primary({ children, icon: ButtonIcon, onClick, disabled }) {
+  // A forward arrow follows the label; every other icon leads it.
+  const trailing = ButtonIcon === ArrowRight;
   return (
-    <Button fullWidth size="lg" onPress={onClick} isDisabled={disabled}>
-      {ButtonIcon && <ButtonIcon {...iconProps} />}
+    <Button fullWidth size="lg" className="app-primary" onPress={onClick} isDisabled={disabled}>
+      {ButtonIcon && !trailing && <ButtonIcon {...iconProps} />}
       {children}
+      {trailing && <ButtonIcon {...iconProps} />}
     </Button>
   );
 }
 
 function Danger({ children, icon: ButtonIcon, onClick }) {
   return (
-    <Button fullWidth size="lg" variant="danger-soft" onPress={onClick}>
+    <Button fullWidth size="lg" variant="danger-soft" className="app-danger" onPress={onClick}>
       {ButtonIcon && <ButtonIcon {...iconProps} />}
       {children}
     </Button>
@@ -198,82 +301,75 @@ function Danger({ children, icon: ButtonIcon, onClick }) {
 // Low-emphasis action under the main one.
 function Quiet({ children, onClick, danger }) {
   return (
-    <Button fullWidth variant="ghost" className={danger ? "text-danger" : ""} onPress={onClick}>
+    <Button fullWidth variant="ghost" className={`app-link ${danger ? "danger" : ""}`} onPress={onClick}>
       {children}
     </Button>
   );
 }
 
+// iOS-style switch: a wide capsule track with a pill-shaped knob.
+// Track 64 wide, 2 padding each side, knob 38: the knob travels 22.
+const KNOB_TRAVEL = 22;
+
 function Toggle({ label, on, onChange, disabled }) {
   return (
-    <Switch aria-label={label} isSelected={on} isDisabled={disabled} onChange={onChange}>
-      <Switch.Content>
-        <Switch.Control>
-          <Switch.Thumb />
-        </Switch.Control>
-      </Switch.Content>
-    </Switch>
+    <button
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      className={`app-switch ${on ? "on" : ""}`}
+      disabled={disabled}
+      onClick={onChange}
+    >
+      {/* Slides by a fixed distance. A layout animation would measure the knob
+          inside the scaled phone and jump. */}
+      <motion.span initial={false} animate={{ x: on ? KNOB_TRAVEL : 0 }} transition={spring} />
+    </button>
   );
 }
 
 // Inline message with an icon: privacy notes, caveats, confirmations.
 function Note({ icon: NoteIcon, status, title, children }) {
   return (
-    <motion.div variants={item}>
-      <Alert status={status}>
-        <Alert.Indicator>{NoteIcon && <NoteIcon size={16} strokeWidth={2.25} aria-hidden="true" />}</Alert.Indicator>
-        <Alert.Content>
-          {title && <Alert.Title>{title}</Alert.Title>}
-          <Alert.Description>{children}</Alert.Description>
-        </Alert.Content>
-      </Alert>
+    // Animates on its own mount: some notes appear after the screen's stagger has run.
+    <motion.div className={`note ${status ?? ""}`} variants={item} initial="initial" animate="animate">
+      {NoteIcon && <NoteIcon size={16} strokeWidth={2.25} aria-hidden="true" />}
+      <p>
+        {title && <b>{title}. </b>}
+        {children}
+      </p>
     </motion.div>
   );
 }
 
-function Ring({ value, metric, label, sub }) {
-  const r = 30;
-  const { color } = metrics[metric];
+function MetricTile({ metric, value, unit, values, status }) {
   return (
-    <div className="vital">
-      <span className="ring-icon">
-        <MetricIcon metric={metric} size={20} />
-      </span>
-      <svg viewBox="0 0 72 72" width="72" height="72">
-        <circle cx="36" cy="36" r={r} stroke={color} className="ring-track" />
-        <motion.circle
-          cx="36"
-          cy="36"
-          r={r}
-          stroke={color}
-          className="ring-value"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: value }}
-          transition={{ duration: 1.1, ease, delay: 0.2 }}
-        />
-      </svg>
-      <strong>{label}</strong>
-      <span>{sub}</span>
-    </div>
+    <Card className="metric-tile">
+      <Label metric={metric}>{unit}</Label>
+      <strong className="metric-value">{value}</strong>
+      <DotSpark values={values} label={`${unit} trend`} />
+      <span className="metric-status">{status}</span>
+    </Card>
   );
 }
 
 // Tags say where a piece of information came from.
 const tagIcons = { sensor: Watch, you: User, pos: Sprout, neutral: Repeat };
-const tagColors = { sensor: "accent", you: "warning", pos: "success", neutral: "default" };
 
 function Tag({ kind, children }) {
   const TagIcon = tagIcons[kind];
   return (
-    <Chip size="sm" variant="soft" color={tagColors[kind]}>
+    <span className={`src-tag ${kind}`}>
       {TagIcon && <TagIcon size={11} strokeWidth={2.5} aria-hidden="true" />}
-      <Chip.Label>{children}</Chip.Label>
-    </Chip>
+      {children}
+    </span>
   );
 }
 
 /* 01 · Set up — Onboarding */
-// Five short pages. Each row is [label, icon, colour, detail]; the page's
+// Five short pages. Each row is [label, icon, detail], where the icon is a
+// Lucide component or, for a real app, the path to its icon image. A page's
+// `all` adds one button under the cards that turns every row on; the page's
 // `control` decides what sits at the end of the row.
 const setup = [
   {
@@ -284,58 +380,61 @@ const setup = [
         label: "Personal data",
         control: "value",
         rows: [
-          ["Name", User, "var(--accent)", "Sanne Koster"],
-          ["Age", CalendarDays, "var(--app-sleep)", "34"],
-          ["Gender", Users, "var(--app-mood)", "Woman"],
-          ["Chronic condition", Activity, "var(--app-heart)", "None"],
+          ["Name", User, "Annie Koster"],
+          ["Age", CalendarDays, "34"],
+          ["Gender", Users, "Woman"],
+          ["Chronic condition", Activity, "None"],
         ],
       },
       {
         label: "Right now",
         control: "switch",
         rows: [
-          ["Pregnant", Baby, "var(--app-stress)"],
-          ["Physical disability", Accessibility, "var(--app-activity)"],
+          ["Pregnant", Baby],
+          ["Physical disability", Accessibility],
         ],
       },
     ],
   },
   {
     title: "Your sensors",
+    all: ["Connect all", "All connected"],
     lede: "Sensors track your body in the background. You don’t have to do anything.",
     cards: [
       {
         label: "Wearables",
         control: "connect",
         rows: [
-          ["Apple Watch", Watch, "var(--app-heart)", "Sleep, heart rate, HRV"],
-          ["AirPods", Headphones, "var(--app-sleep)", "Voice reflections"],
+          ["Apple Watch", Watch, "Sleep, heart rate, HRV"],
+          ["AirPods", Headphones, "Voice reflections"],
         ],
       },
       {
         label: "Brain wave sensors",
         control: "connect",
-        rows: [["EEG headband", Brain, "var(--app-mood)", "Focus and relaxation"]],
+        rows: [["EEG headband", Brain, "Focus and relaxation"]],
       },
     ],
   },
   {
     title: "Food logging",
+    all: ["Connect all", "All connected"],
     lede: "Already logging meals? Connect the app, so food shows up next to sleep, mood and energy.",
     cards: [
       {
         label: "Food apps",
         control: "connect",
         rows: [
-          ["MyFitnessPal", Utensils, "var(--app-sleep)", "Meals and calories"],
-          ["Lifesum", Salad, "var(--app-activity)", "Meals and water"],
-          ["Yazio", Apple, "var(--app-stress)", "Meals and fasting"],
+          ["MyFitnessPal", myFitnessPalIcon, "Meals and calories"],
+          ["Lifesum", lifesumIcon, "Meals and water"],
+          ["Yazio", yazioIcon, "Meals and fasting"],
         ],
       },
     ],
   },
   {
     title: "Medical data",
+    all: ["Allow all", "All allowed"],
     optional: true,
     lede: "Bring in your records for a fuller picture. You can add them later.",
     cards: [
@@ -343,14 +442,15 @@ const setup = [
         label: "Import",
         control: "switch",
         rows: [
-          ["GP medical records", Stethoscope, "var(--accent)"],
-          ["Vaccine history", Syringe, "var(--app-sleep)"],
-          ["Operations history", Hospital, "var(--app-heart)"],
-          ["Dental records", Smile, "var(--app-activity)"],
+          ["Apple Health", appleHealthIcon],
+          ["GP medical records", Stethoscope],
+          ["Vaccine history", Syringe],
+          ["Operations history", Hospital],
+          ["Dental records", Smile],
         ],
       },
     ],
-    note: [Lock, "Private by default. Nothing is shared unless you choose to."],
+    note: [Lock, "Your data is private and encrypted. Nothing is shared unless you choose to."],
   },
   {
     title: "Family",
@@ -361,9 +461,9 @@ const setup = [
         label: "Invite relatives",
         control: "invite",
         rows: [
-          ["Mother", User, "var(--app-mood)"],
-          ["Father", User, "var(--app-sleep)"],
-          ["Sibling", Users, "var(--app-stress)"],
+          ["Mother", User],
+          ["Father", User],
+          ["Sibling", Users],
         ],
       },
     ],
@@ -385,22 +485,21 @@ function Onboarding({ next }) {
   };
   const forward = () => (last ? next() : setPage(page + 1));
 
+  // One button for every row on the page, where the page asks for it.
+  const rowLabels = p.cards.flatMap((card) => card.rows.map(([label]) => label));
+  const allOn = rowLabels.every((label) => on[label]);
+  const turnAllOn = () => {
+    haptic();
+    setOn((s) => ({ ...s, ...Object.fromEntries(rowLabels.map((label) => [label, true])) }));
+  };
+
   return (
     <Screen
       full
-      eyebrow={`Step ${page + 1} of ${setup.length}${p.optional ? " · Optional" : ""}`}
       title={p.title}
-      action={
-        <>
-          <Primary icon={last ? Check : ArrowRight} onClick={forward}>
-            {last ? "Finish setup" : "Continue"}
-          </Primary>
-          {p.optional && <Quiet onClick={forward}>Skip for now</Quiet>}
-        </>
-      }
-    >
-      <motion.div className="setup-top" variants={item}>
-        {page > 0 && (
+      // Back lives in the navigation bar, so showing it moves nothing below.
+      leading={
+        page > 0 && (
           <Button
             isIconOnly
             size="sm"
@@ -410,18 +509,33 @@ function Onboarding({ next }) {
           >
             <ChevronLeft size={18} strokeWidth={2.5} aria-hidden="true" />
           </Button>
-        )}
-        <ProgressBar
-          aria-label="Setup progress"
-          size="sm"
-          className="flex-1"
-          value={((page + 1) / setup.length) * 100}
-        >
-          <ProgressBar.Track>
-            <ProgressBar.Fill />
-          </ProgressBar.Track>
-        </ProgressBar>
-      </motion.div>
+        )
+      }
+      // Progress sits above the title, where the Today screen has its companion.
+      heroHeight={48}
+      hero={
+        <motion.div className="setup-top" variants={item}>
+          <ProgressBar
+            aria-label="Setup progress"
+            size="sm"
+            className="flex-1"
+            value={((page + 1) / setup.length) * 100}
+          >
+            <ProgressBar.Track>
+              <ProgressBar.Fill />
+            </ProgressBar.Track>
+          </ProgressBar>
+        </motion.div>
+      }
+      action={
+        <>
+          <Primary icon={last ? Check : ArrowRight} onClick={forward}>
+            {last ? "Finish setup" : "Continue"}
+          </Primary>
+          {p.optional && <Quiet onClick={forward}>Skip for now</Quiet>}
+        </>
+      }
+    >
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={page}
@@ -438,12 +552,16 @@ function Onboarding({ next }) {
             <Card key={card.label}>
               <span className="card-label">{card.label}</span>
               <ul className="toggles setup-rows">
-                {card.rows.map(([label, RowIcon, color, detail]) => (
+                {card.rows.map(([label, RowIcon, detail]) => (
                   <li key={label}>
                     <span className="toggle-label">
-                      <span className="tile" style={{ background: color }}>
-                        <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
-                      </span>
+                      {typeof RowIcon === "string" ? (
+                        <img className="tile app-icon" src={RowIcon} alt="" />
+                      ) : (
+                        <span className="tile">
+                          <RowIcon size={16} strokeWidth={2.25} aria-hidden="true" />
+                        </span>
+                      )}
                       <span className="row-text">
                         {label}
                         {detail && card.control !== "value" && <small>{detail}</small>}
@@ -457,6 +575,7 @@ function Onboarding({ next }) {
                       <Button
                         size="sm"
                         variant={on[label] ? "tertiary" : "secondary"}
+                        className={on[label] ? "pill-done" : ""}
                         aria-label={`${pillWords[card.control][0]} ${label}`}
                         onPress={() => toggle(label)}
                       >
@@ -469,6 +588,20 @@ function Onboarding({ next }) {
               </ul>
             </Card>
           ))}
+          {p.all && (
+            <motion.div variants={item}>
+              <Button
+                fullWidth
+                variant="secondary"
+                className={`connect-all ${allOn ? "pill-done" : ""}`}
+                isDisabled={allOn}
+                onPress={turnAllOn}
+              >
+                {allOn && <Check {...iconProps} />}
+                {p.all[allOn ? 1 : 0]}
+              </Button>
+            </motion.div>
+          )}
           {p.note && <Note icon={p.note[0]}>{p.note[1]}</Note>}
         </motion.div>
       </AnimatePresence>
@@ -483,44 +616,55 @@ function Today({ next }) {
     <Screen
       eyebrow="Wednesday 16 October"
       title="Good afternoon"
+      className="screen-today"
+      hero={
+        <div className="today-hero">
+          <Orb size={104} />
+        </div>
+      }
       action={<Primary icon={Mic} onClick={next}>Log a thought</Primary>}
       trailing={
-        <Avatar color="accent" aria-label="Sanne Koster">
-          <Avatar.Fallback>SK</Avatar.Fallback>
-        </Avatar>
+        <button className="avatar-btn" aria-label="Profile and privacy">
+          {/* HeroUI's custom image composition: Avatar.Image tracks loading and
+              shows the initials until the image is ready. */}
+          <Avatar className="size-11">
+            <Avatar.Image asChild src={profileImage}>
+              <img alt="Annie Koster" src={profileImage} width={44} height={44} />
+            </Avatar.Image>
+            <Avatar.Fallback>AK</Avatar.Fallback>
+          </Avatar>
+        </button>
       }
     >
-      <Card className="rings">
-        <Ring value={0.86} metric="sleep" label="7h 31m" sub="Sleep" />
-        <Ring value={0.72} metric="hrv" label="48 ms" sub="HRV" />
-        <Ring value={0.35} metric="stress" label="Low" sub="Stress" />
-      </Card>
-      <Card>
-        <div className="row-between">
-          <Label metric="heart">Resting heart rate</Label>
-          <Tag kind="sensor">Sensor</Tag>
+      <motion.div className="today-path" variants={item}>
+        <div className="path-heading">
+          <div>
+            <Label metric="heart">Your heart rhythm this week</Label>
+            <p className="card-foot">Within your usual range.</p>
+          </div>
+          <span>57 bpm</span>
         </div>
-        <div className="big-num">
-          57 <small>bpm</small>
+        <RhythmPath values={hr} labels={["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"]} />
+      </motion.div>
+      <div className="section-heading">
+        <h5>Body & mind</h5>
+        <Tag kind="sensor">Sensor</Tag>
+      </div>
+      <div className="metric-tiles">
+        <MetricTile metric="sleep" value="7h 31m" unit="Sleep" status="Near baseline" values={[7.4, 6.6, 7.2, 6.5, 7.1, 7.4, 7.5]} />
+        <MetricTile metric="hrv" value="48" unit="HRV · ms" status="Within range" values={[49, 45, 46, 43, 47, 49, 48]} />
+        <MetricTile metric="stress" value="Low" unit="Stress" status="Steady" values={[5, 3, 4, 6, 5, 4, 3]} />
+      </div>
+      <Card className="metric-detail">
+        <Label metric="heart">Resting heart rate</Label>
+        <div className="metric-detail-row">
+          <div>
+            <div className="big-num">57 <small>bpm</small></div>
+            <span className="status-normal"><CircleCheck size={14} aria-hidden="true" />Within range</span>
+          </div>
+          <DotSpark values={hr} label="Resting heart rate trend" />
         </div>
-        <svg viewBox="0 0 260 60" className="spark">
-          <rect x="0" y="18" width="260" height="22" rx="6" className="baseline-band" />
-          <motion.polyline
-            points={hr.map((v, i) => `${10 + i * 40},${60 - (v - 50) * 4}`).join(" ")}
-            className="spark-line"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, ease, delay: 0.3 }}
-          />
-        </svg>
         <p className="card-foot">Within your usual range this week.</p>
-      </Card>
-      <Card className="nudge">
-        <Orb size={36} />
-        <div>
-          <p>Anything on your mind?</p>
-          <span>Say it in a few seconds. We'll keep it for your weekly reflection.</span>
-        </div>
       </Card>
     </Screen>
   );
@@ -566,11 +710,7 @@ function Capture({ next }) {
     >
       <Card className="recorder">
         <div className="orb-wrap">
-          <motion.div
-            className="orb"
-            animate={done ? { scale: 1 } : { scale: [1, 1.12, 1] }}
-            transition={done ? {} : { duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <Speaker talking={!done} />
           <span className="timer">0:{String(seconds).padStart(2, "0")}</span>
         </div>
         <div className="wave" aria-hidden="true">
@@ -597,19 +737,14 @@ function Capture({ next }) {
       <AnimatePresence>
         {saved && (
           <motion.div
-            className="saved-toast"
+            className="app-toast"
             initial={{ opacity: 0, y: 16, scale: 0.94, filter: "blur(6px)" }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 16, scale: 0.94, filter: "blur(6px)" }}
             transition={spring}
           >
-            <Alert status="success">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>Reflection saved</Alert.Title>
-                <Alert.Description>18 sec · Today, 16:42</Alert.Description>
-              </Alert.Content>
-            </Alert>
+            <Check {...iconProps} />
+            Reflection saved · 18 sec · Today, 16:42
           </motion.div>
         )}
       </AnimatePresence>
@@ -631,9 +766,9 @@ function Structure({ next }) {
       <Card>
         <span className="card-label">Context</span>
         <div className="chips">
-          <Chip><Briefcase size={13} strokeWidth={2.25} aria-hidden="true" /><Chip.Label>Work</Chip.Label></Chip>
-          <Chip><Presentation size={13} strokeWidth={2.25} aria-hidden="true" /><Chip.Label>Presentation</Chip.Label></Chip>
-          <Chip><Moon size={13} strokeWidth={2.25} aria-hidden="true" /><Chip.Label>Poor sleep</Chip.Label></Chip>
+          <span><Briefcase size={13} strokeWidth={2.25} aria-hidden="true" />Work</span>
+          <span><Presentation size={13} strokeWidth={2.25} aria-hidden="true" />Presentation</span>
+          <span><Moon size={13} strokeWidth={2.25} aria-hidden="true" />Poor sleep</span>
         </div>
       </Card>
       <Card>
@@ -641,9 +776,9 @@ function Structure({ next }) {
           <span className="card-label">You said you felt</span>
           <Tag kind="you">You reported</Tag>
         </div>
-        <div className="chips">
-          <Chip color="warning" variant="soft">Stressed</Chip>
-          <Chip color="warning" variant="soft">Tired</Chip>
+        <div className="chips chips-warm">
+          <span>Stressed</span>
+          <span>Tired</span>
         </div>
       </Card>
       <Card>
@@ -670,39 +805,32 @@ const links = [
 function Connect({ next }) {
   return (
     <Screen
-      eyebrow="What we noticed"
+      eyebrow="What I noticed"
       title="Connections"
       action={<Primary icon={CalendarDays} onClick={next}>Open weekly overview</Primary>}
     >
       {links.map((l, i) => (
         <Card key={l.a} className="link-card">
           <div className="link-row">
-            <Chip className="justify-center">{l.a}</Chip>
-            <svg viewBox="0 0 60 12" className="link-line" aria-hidden="true">
-              <motion.path
-                d="M2 6 H58"
-                className={l.positive ? "positive" : ""}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.7, delay: 0.3 + i * 0.15, ease }}
-              />
-            </svg>
-            <Chip className="justify-center" variant="soft" color={l.positive ? "success" : "warning"}>
-              {l.b}
-            </Chip>
+            <span className="node">{l.a}</span>
+            <motion.span
+              className={`link-line ${l.positive ? "positive" : ""}`}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.7, delay: 0.3 + i * 0.15, ease }}
+              aria-hidden="true"
+            />
+            <span className={`node ${l.positive ? "node-pos" : ""}`}>{l.b}</span>
           </div>
           <div className="evidence">
-            <Meter
-              aria-label={`${l.a} and ${l.b}`}
-              size="sm"
-              className="flex-1"
-              color={l.positive ? "success" : "warning"}
-              value={l.strength * 100}
-            >
-              <Meter.Track>
-                <Meter.Fill />
-              </Meter.Track>
-            </Meter>
+            <div className="strength">
+              <motion.span
+                className={l.positive ? "positive" : ""}
+                initial={{ width: 0 }}
+                animate={{ width: `${l.strength * 100}%` }}
+                transition={{ duration: 0.8, delay: 0.4 + i * 0.15, ease }}
+              />
+            </div>
             <span>{l.n}</span>
           </div>
         </Card>
@@ -725,16 +853,17 @@ function Weekly({ next }) {
       title="Your week"
       action={<Primary icon={TrendingUp} onClick={next}>See the long-term view</Primary>}
     >
-      <Card className="summary">
+      <Card className="summary open-summary">
         <span className="ai-label">
           <Orb size={18} />
-          We noticed
+          I noticed
         </span>
         <p>
           A more stressful week than usual, with lower sleep and energy. Your
           reflections often mentioned <b>work deadlines</b>.
         </p>
       </Card>
+      <div className="section-heading"><h5>Weekly signals</h5><span>7 days</span></div>
       <Card>
         <div className="row-between">
           <Label metric="stress">Stress</Label>
@@ -758,13 +887,14 @@ function Weekly({ next }) {
         </div>
       </Card>
       <div className="grid-2">
-        <Card>
+        <Card className="sleep-summary">
           <Label metric="sleep">Sleep</Label>
           <div className="big-num sm">6h 42m</div>
           <span className="delta down">
             <ArrowDownRight size={14} strokeWidth={2.5} aria-hidden="true" />
             48m below baseline
           </span>
+          <SleepBars />
         </Card>
         <Card>
           <Label metric="activity">Activity</Label>
@@ -804,6 +934,7 @@ function Patterns({ next }) {
       action={<Primary icon={ClipboardList} onClick={next}>Prepare for my session</Primary>}
     >
       <Card>
+        <h5 className="card-section-title">Your signals over time</h5>
         <div className="heat">
           {rows.map((r, ri) => (
             <div key={r.label} className="heat-row">
@@ -840,12 +971,12 @@ function Patterns({ next }) {
 
 /* ---------- Care: the patient's and the doctor's side of the same moment ---------- */
 
-// Settings-style rows: a coloured tile makes each category quick to find.
+// Settings-style rows, each with a monochrome icon tile.
 const categories = [
-  ["Sleep & stress trends", true, ChartLine, "var(--app-sleep)"],
-  ["Mood & energy", true, Smile, "var(--app-mood)"],
-  ["Session goals", true, Target, "var(--app-activity)"],
-  ["Voice transcripts", false, AudioLines, "var(--app-stress)"],
+  ["Sleep & stress trends", true, ChartLine],
+  ["Mood & energy", true, Smile],
+  ["Session goals", true, Target],
+  ["Voice transcripts", false, AudioLines],
 ];
 
 // State both phones read and write, so an action on one side shows on the other.
@@ -861,16 +992,21 @@ export const initialCare = {
 
 const visit = {
   forDoctor:
-    "Sanne described three weeks of short sleep and evening work. Agreed to protect sleep and restart lunchtime runs.",
+    "Annie described three weeks of short sleep and evening work. Agreed to protect sleep and restart lunchtime runs.",
   forPatient:
     "You described three weeks of short sleep and evening work. You agreed to protect your sleep and restart lunchtime runs.",
   goals: ["In bed by 23:00 on work nights", "Two lunchtime runs a week", "Check in again in 3 weeks"],
 };
 
-function Person({ initials, name, sub }) {
+function Person({ initials, name, sub, image }) {
   return (
     <Card className="pro">
-      <Avatar>
+      <Avatar className="size-11">
+        {image && (
+          <Avatar.Image asChild src={image}>
+            <img alt="" src={image} width={44} height={44} />
+          </Avatar.Image>
+        )}
         <Avatar.Fallback>{initials}</Avatar.Fallback>
       </Avatar>
       <div>
@@ -885,11 +1021,11 @@ function Person({ initials, name, sub }) {
 function Scope({ on, words }) {
   return (
     <ul className="toggles setup-rows">
-      {categories.map(([label, , RowIcon, color], i) => (
+      {categories.map(([label, , RowIcon], i) => (
         <li key={label}>
           <span className="toggle-label">
-            <span className="tile" style={{ background: color }}>
-              <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
+            <span className="tile">
+              <RowIcon size={16} strokeWidth={2.25} aria-hidden="true" />
             </span>
             {label}
           </span>
@@ -910,11 +1046,7 @@ function Recorder({ caption }) {
   return (
     <Card className="recorder">
       <div className="orb-wrap">
-        <motion.div
-          className="orb"
-          animate={{ scale: [1, 1.12, 1] }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <Speaker talking />
         <span className="timer">
           {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
         </span>
@@ -999,11 +1131,11 @@ function Share({ next, care, update }) {
       <Card>
         <span className="card-label">What they’ll see</span>
         <ul className="toggles">
-          {categories.map(([label, , RowIcon, color], i) => (
+          {categories.map(([label, , RowIcon], i) => (
             <li key={label}>
               <span className="toggle-label">
-                <span className="tile" style={{ background: color }}>
-                  <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
+                <span className="tile">
+                  <RowIcon size={16} strokeWidth={2.25} aria-hidden="true" />
                 </span>
                 {label}
               </span>
@@ -1090,7 +1222,7 @@ function DoctorOverview({ next, care }) {
   return (
     <Screen
       eyebrow={shared ? "Shared overview · last 12 weeks" : "Patient"}
-      title="Sanne Koster"
+      title="Annie Koster"
       action={shared && <Primary icon={ArrowRight} onClick={next}>Start the session</Primary>}
     >
       {!shared && <NoAccess revoked={care.access === "revoked"} />}
@@ -1145,9 +1277,9 @@ function DoctorOverview({ next, care }) {
           <Card>
             <span className="card-label">May want to discuss</span>
             <div className="chips">
-              <Chip>Workload</Chip>
-              <Chip>Sleep consistency</Chip>
-              <Chip>Evening stress</Chip>
+              <span>Workload</span>
+              <span>Sleep consistency</span>
+              <span>Evening stress</span>
             </div>
           </Card>
           {hidden.length > 0 && (
@@ -1259,18 +1391,18 @@ function DoctorSession({ next, care, update }) {
           update({ notes: true });
         }}
       >
-        Send summary to Sanne
+        Send summary to Annie
       </Primary>
     ),
   };
 
   return (
     <Screen eyebrow="Today, 10:30" title="Session" action={actions[state]}>
-      <Person initials="SK" name="Sanne Koster" sub="34 · in session now" />
+      <Person initials="AK" name="Annie Koster" sub="34 · in session now" image={profileImage} />
       {state === "idle" && (
         <Card>
           <Label icon={Mic}>Record this session?</Label>
-          <p className="ask">Ask Sanne before you record.</p>
+          <p className="ask">Ask Annie before you record.</p>
           <p className="card-foot">
             The recording is for your notes. The summary and AI notes can be shared with the patient.
           </p>
@@ -1281,7 +1413,7 @@ function DoctorSession({ next, care, update }) {
           <Orb size={36} />
           <div>
             <p>Request sent</p>
-            <span>Sanne sees it on their phone and decides.</span>
+            <span>Annie sees it on their phone and decides.</span>
           </div>
         </Card>
       )}
@@ -1295,7 +1427,7 @@ function DoctorSession({ next, care, update }) {
         </>
       )}
       {state === "declined" && (
-        <Note icon={ShieldCheck}>Sanne chose not to record. Take notes as usual.</Note>
+        <Note icon={ShieldCheck}>Annie chose not to record. Take notes as usual.</Note>
       )}
       {state === "done" && (
         <>
@@ -1303,7 +1435,7 @@ function DoctorSession({ next, care, update }) {
           {care.notes && (
             <p className="hint">
               <Lock size={13} strokeWidth={2.25} aria-hidden="true" />
-              Sent to Sanne, encrypted.
+              Sent to Annie, encrypted.
             </p>
           )}
         </>
@@ -1364,13 +1496,13 @@ function PatientAccess({ care, update, restart }) {
           <ul className="facts">
             {care.notes && (
               <li>
-                <FileText size={16} strokeWidth={2.25} color="var(--accent)" aria-hidden="true" />
+                <FileText size={16} strokeWidth={2.25} aria-hidden="true" />
                 Session summary · today
               </li>
             )}
             {care.results && (
               <li>
-                <FlaskConical size={16} strokeWidth={2.25} color="var(--app-heart)" aria-hidden="true" />
+                <FlaskConical size={16} strokeWidth={2.25} aria-hidden="true" />
                 Blood test results · today
               </li>
             )}
@@ -1401,12 +1533,12 @@ function PatientAccess({ care, update, restart }) {
 function DoctorAccess({ care, update }) {
   const shared = care.access === "shared";
   const outbox = [
-    ["Session summary", FileText, "var(--accent)", "notes"],
-    ["Blood test results", FlaskConical, "var(--app-heart)", "results"],
+    ["Session summary", FileText, "notes"],
+    ["Blood test results", FlaskConical, "results"],
   ];
 
   return (
-    <Screen eyebrow="Patient record" title="Sanne Koster">
+    <Screen eyebrow="Patient record" title="Annie Koster">
       {shared ? (
         <>
           <Note icon={ShieldCheck} status="success">
@@ -1419,17 +1551,18 @@ function DoctorAccess({ care, update }) {
           <Card>
             <span className="card-label">Send to the patient</span>
             <ul className="toggles setup-rows">
-              {outbox.map(([label, RowIcon, color, key]) => (
+              {outbox.map(([label, RowIcon, key]) => (
                 <li key={key}>
                   <span className="toggle-label">
-                    <span className="tile" style={{ background: color }}>
-                      <RowIcon size={16} strokeWidth={2.25} color="#fff" aria-hidden="true" />
+                    <span className="tile">
+                      <RowIcon size={16} strokeWidth={2.25} aria-hidden="true" />
                     </span>
                     {label}
                   </span>
                   <Button
                     size="sm"
                     variant={care[key] ? "tertiary" : "secondary"}
+                    className={care[key] ? "pill-done" : ""}
                     isDisabled={care[key]}
                     aria-label={`Send ${label}`}
                     onPress={() => {

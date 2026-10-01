@@ -1,21 +1,22 @@
 /* ---------- Intro scenes: the app's card language, on the page ---------- */
 
 .intro {
-  --late: #ff9500;
-  --early: #34c759;
+  --late: var(--danger);
+  --early: #28c886;
 
-  /* Type scale: every size in the intro comes from these four. */
-  --text-caption: 13px;
-  --text-body-sm: 15px;
-  --text-body: 17px;
-  --text-display: clamp(34px, 6vw, 48px);
+  /* Type scale: every size in the intro comes from these four. In rem, so
+     they follow the reader's text-size setting: 13, 15, 17 and 34–48px. */
+  --text-caption: 0.8125rem;
+  --text-body-sm: 0.9375rem;
+  --text-body: 1.0625rem;
+  --text-display: clamp(2.125rem, 6vw, 3rem);
 
   display: grid;
   gap: 12px;
   width: 100%;
   max-width: 880px;
   margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--sans);
+  font-family: var(--sans);
 }
 
 .intro-head {
@@ -28,16 +29,15 @@
   font-weight: 600;
   line-height: 1.4;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .intro-head h1 {
   margin-top: 4px;
+  font-family: var(--rounded);
   font-size: var(--text-display);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .intro-head p {
@@ -50,6 +50,7 @@
 
 .intro-grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -64,14 +65,42 @@
   font-size: var(--text-body);
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.01em;
 }
 
 .intro-card p {
   margin-top: 4px;
   font-size: var(--text-body-sm);
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--muted);
+}
+
+/* Cards on the second screen: the chart and the two benefit lists. */
+.card.intro-card {
+  padding: 20px;
+}
+
+/* Problem cards hold their illustration 8px from the edge; its corners stay
+   concentric with the card's. */
+.card.problem-card {
+  padding: 8px;
+}
+
+.problem-card .viz {
+  border-radius: calc(var(--card-radius) - 8px);
+}
+
+/* Title and text of a problem card: 20px of padding around the pair, 6px
+   between them. */
+.intro-card-text {
+  padding: 20px;
+}
+
+.intro-card-text h2 {
+  margin-top: 0;
+}
+
+.intro-card-text p {
+  margin-top: 6px;
 }
 
 /* ---------- Scene 1 visuals ---------- */
@@ -81,7 +110,7 @@
   place-items: center;
   height: 220px;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: var(--card-radius);
   background: color-mix(in srgb, var(--k) 10%, transparent);
   color: var(--k);
 }
@@ -202,7 +231,9 @@
   display: grid;
   justify-items: center;
   gap: 10px;
-  width: 112px;
+  /* Narrows on small screens instead of pushing the card wider than the page. */
+  flex: 0 1 112px;
+  min-width: 0;
 }
 
 .viz-node {
@@ -234,23 +265,65 @@
 
 /* ---------- Scene 2 ---------- */
 
+.curve-plot {
+  position: relative;
+}
+
+/* Label for the dot where the two lines split. */
+.curve-mark {
+  position: absolute;
+  translate: -50% calc(-100% - 14px);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--body);
+  white-space: nowrap;
+}
+
+/* Axis names: the vertical one at the top of its axis, the horizontal one
+   under the end of its axis. */
+.curve-y,
+.curve-x {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.curve-y {
+  position: absolute;
+  top: 0;
+  left: 12px;
+}
+
+/* Outside the plot, so the plot keeps the chart's proportions; pulled up
+   to sit close under the axis. */
+.curve-x {
+  margin-top: -20px;
+  text-align: right;
+}
+
 .curve svg {
   display: block;
   width: 100%;
 }
 
+/* 4px on screen at any chart size, the same as the legend's samples. */
 .curve path {
   fill: none;
-  stroke-width: 5;
+  stroke-width: 4;
   stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
 
 .curve-late {
   stroke: var(--late);
 }
 
+/* Short dashes with round caps; the legend's sample uses the same pattern. */
 .curve-early {
   stroke: var(--early);
+  stroke-dasharray: 8 8;
 }
 
 .curve-dot {
@@ -259,9 +332,11 @@
   stroke-width: 4;
 }
 
+/* 1px on screen at any chart size. */
 .curve-axis {
   stroke: var(--border);
-  stroke-width: 2;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
 .curve-legend {
@@ -282,17 +357,21 @@
   text-wrap: pretty;
 }
 
-.curve-legend i {
-  flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--late);
+.curve-legend span {
+  gap: 8px;
 }
 
-.curve-legend .early i {
-  background: var(--early);
+.curve-legend svg {
+  flex: none;
+  width: 30px;
+  height: 6px;
 }
+
+.curve-legend line {
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
 
 /* Settings-style rows, as on the app's share screen. */
 .benefits {

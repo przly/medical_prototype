@@ -27,11 +27,13 @@
 .proto-steps {
   position: fixed;
   z-index: 10;
-  bottom: 16px;
+  /* The extra bottom padding leaves room for the highlight's shadow, which
+     the overflow and mask would otherwise cut off; the steps sit where they did. */
+  bottom: 0;
   left: 50%;
   translate: -50% 0;
   width: calc(100vw - 32px);
-  padding: 4px;
+  padding: 4px 4px 20px;
   overflow: hidden;
   /* No bar behind the row; steps fade out toward the window edges instead. */
   mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
@@ -43,11 +45,11 @@
 .proto-step-bg {
   position: absolute;
   top: 4px;
-  bottom: 4px;
+  bottom: 20px;
   left: 50%;
   translate: -50% 0;
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--background);
   box-shadow: inset 0 0 0 1px var(--border), 0 6px 20px -12px rgb(0 0 0 / 0.25);
 }
 
@@ -163,7 +165,7 @@
 }
 
 .role-patient { color: var(--context); }
-.role-doctor { color: #007aff; }
+.role-doctor { color: var(--care); }
 
 .proto-explain {
   width: 100%;
@@ -177,20 +179,30 @@
   }
 }
 
-.proto-explain .proto-num {
-  text-transform: uppercase;
+/* When the step happens, as a tag in the step's colour. */
+.proto-when {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--c-soft);
+  color: var(--c);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
 }
 
 .proto-explain h3 {
-  margin-top: 6px;
-  font-weight: 600;
-  font-size: 28px;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  margin-top: 10px;
+  font-family: var(--rounded);
+  font-weight: 750;
+  font-size: 32px;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
 }
 
 .proto-explain p {
-  margin-top: 12px;
+  margin-top: 10px;
   color: var(--muted);
 }
 
@@ -202,21 +214,27 @@
 /* ---------- Phone ---------- */
 
 .phone {
-  /* Metric colours for charts. Everything else is HeroUI's light theme. */
-  --app-sleep: #30b0c7;
-  --app-heart: #ff2d55;
-  --app-stress: #ff9500;
-  --app-mood: #af52de;
-  --app-activity: #34c759;
+  /* Metric and status colours; the rest comes from the theme in styles.css. */
+  --app-card: var(--surface);
+  --app-tertiary: #898b8c;
+  --app-fill: var(--default);
+  --app-link: var(--brand-ink);
+  --app-sleep: #528fed;
+  /* iOS system red, the colour Apple uses for heart data. */
+  --app-heart: #ff3b30;
+  --app-stress: #f47d4d;
+  --app-mood: #6842c7;
+  --app-activity: #28c886;
+  --app-positive: #087c53;
 
   /* Liquid Glass, iOS 27 flavour: a little more frosted than iOS 26. */
-  --glass-bg: rgb(255 255 255 / 0.62);
-  --glass-blur: blur(14px) saturate(190%);
+  --glass-bg: rgb(255 255 255 / 0.86);
+  --glass-blur: blur(18px);
   --glass-edge:
     inset 0 0.5px 0 rgb(255 255 255 / 0.9),
     inset 0 0 0 0.5px rgb(255 255 255 / 0.55),
     inset 0 -0.5px 0 rgb(0 0 0 / 0.04);
-  --glass-shadow: 0 8px 28px -8px rgb(0 0 0 / 0.18), 0 1px 3px rgb(0 0 0 / 0.06);
+  --glass-shadow: 0 8px 28px -8px rgb(27 26 29 / 0.12), 0 1px 3px rgb(0 0 0 / 0.03);
 
   position: absolute;
   top: 0;
@@ -262,24 +280,6 @@
   background: linear-gradient(270deg, #1a1a1d, #3e3e44);
 }
 
-/* ---------- Ambient glow behind the phone ---------- */
-
-.ambient {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.ambient-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(40vmax 34vmax at 50% 45%, color-mix(in srgb, var(--glow) 20%, transparent), transparent 70%),
-    radial-gradient(28vmax 24vmax at 30% 80%, color-mix(in srgb, var(--glow) 10%, transparent), transparent 70%);
-}
-
 /* ---------- Screen ---------- */
 
 .phone-screen {
@@ -289,11 +289,27 @@
   border-radius: 55px;
   background: var(--background);
   color: var(--foreground);
-  /* SF Pro on Apple devices; Inter elsewhere. */
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--sans);
   font-size: 15px;
   line-height: 1.34;
-  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrolling content fades out beneath the floating tab bar. */
+.phone-screen::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100px;
+  background: linear-gradient(transparent, var(--background) 80%);
+  pointer-events: none;
+}
+
+/* Onboarding has no tab bar; its action sits where the fade would be. */
+.phone-screen:has(.screen-full)::after {
+  content: none;
 }
 
 /* Status bar: 54pt tall, items centred on the Dynamic Island. */
@@ -381,14 +397,16 @@
   left: 0;
   right: 0;
   height: 120px;
+  /* Solid behind the status and navigation bars (98 of 120px), so content
+     never shows through the inline title; it fades only below them. */
   background: linear-gradient(
-    color-mix(in srgb, var(--background) 94%, transparent) 40%,
+    var(--background) 82%,
     color-mix(in srgb, var(--background) 0%, transparent)
   );
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  mask-image: linear-gradient(#000 65%, transparent);
-  -webkit-mask-image: linear-gradient(#000 65%, transparent);
+  mask-image: linear-gradient(#000 82%, transparent);
+  -webkit-mask-image: linear-gradient(#000 82%, transparent);
   pointer-events: none;
 }
 
@@ -402,7 +420,6 @@
   height: 44px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   padding: 0 16px;
   pointer-events: none;
 }
@@ -420,8 +437,55 @@
   letter-spacing: -0.02em;
 }
 
-.navbar-trailing {
+.navbar-leading {
   pointer-events: auto;
+}
+
+.navbar-trailing {
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+/* Glass bar button (44pt circle). */
+.glass-circle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease-out;
+}
+
+.glass-circle:active {
+  transform: scale(0.92);
+}
+
+/* Profile button: a 44pt circle holding the avatar. */
+.avatar-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  font: inherit;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.08);
+  cursor: pointer;
+  transition: transform 0.12s ease-out;
+}
+
+.avatar-btn:active {
+  transform: scale(0.92);
+}
+
+.avatar-btn:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
 }
 
 .app-scroll {
@@ -429,18 +493,17 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   /* 54 status + 44 nav bar on top; room for the pinned action and tab bar below. */
-  padding: 98px 16px 184px;
+  padding: 104px 20px 184px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   scrollbar-width: none;
-  /* A soft wash in the step's colour that scrolls away with the content. */
-  background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--tint, transparent) 16%, var(--background)) 0,
-      var(--background) 340px
-    )
-    local;
+  background: var(--background);
+}
+
+/* Cards keep their height when the column is taller than the screen. */
+.app-scroll .card {
+  flex-shrink: 0;
 }
 
 .app-scroll::-webkit-scrollbar {
@@ -452,20 +515,21 @@
 }
 
 .app-eyebrow {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 400;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
-/* Large Title: 34pt bold. */
+/* Large Title: 34pt, rounded and heavy. */
 .app-title {
   margin: 0;
   font-size: 34px;
-  font-weight: 700;
-  line-height: 41px;
-  letter-spacing: 0.01em;
+  font-family: var(--rounded);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
   transform-origin: left center;
 }
 
@@ -486,11 +550,54 @@
   );
 }
 
-/* Card header, Health-style: 15pt semibold in the metric's colour. */
+/* Group heading inside a card: smaller than the rows it sits over, so weight
+   and colour mark it as a heading. */
 .card-label {
   font-size: 15px;
   font-weight: 600;
   color: var(--muted);
+}
+
+/* Heading with an icon: full size, in the text colour unless it is a metric. */
+.card-label.with-icon {
+  font-size: 16px;
+  color: var(--foreground);
+}
+
+/* Metrics keep one colour everywhere: headings, list icons, chart rows. */
+.card-label.metric-sleep, .metric-icon.metric-sleep { color: var(--app-sleep); }
+.card-label.metric-hrv, .metric-icon.metric-hrv,
+.card-label.metric-heart, .metric-icon.metric-heart { color: var(--app-heart); }
+.card-label.metric-stress, .metric-icon.metric-stress { color: var(--app-stress); }
+.card-label.metric-mood, .metric-icon.metric-mood { color: var(--app-mood); }
+.card-label.metric-activity, .metric-icon.metric-activity { color: var(--app-activity); }
+
+/* Their icons are solid. */
+.metric-icon {
+  fill: currentColor;
+}
+
+/* The heart's pulse line stays a line, in the surface colour, so it shows
+   on the solid heart. */
+.metric-icon.lucide-heart-pulse path:last-child {
+  fill: none;
+  stroke: var(--surface);
+}
+
+/* The smile's circle is drawn over its face, so a solid fill would hide it:
+   tint the circle instead and keep the features as lines. */
+.metric-icon.lucide-smile {
+  fill: none;
+}
+
+.metric-icon.lucide-smile circle {
+  fill: currentColor;
+  fill-opacity: 0.2;
+}
+
+/* The dumbbell is all thin bars; filling it turns it into a blob. */
+.metric-icon.lucide-dumbbell {
+  fill: none;
 }
 
 .with-icon {
@@ -514,15 +621,15 @@
 
 /* Values use SF Pro Rounded, as Health and Fitness do. */
 .big-num,
-.vital strong,
+.metric-value,
 .timer {
-  font-family: ui-rounded, "SF Pro Rounded", -apple-system, var(--sans);
+  font-family: var(--rounded);
 }
 
 .big-num {
   margin-top: 4px;
   font-size: 34px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -530,7 +637,7 @@
 .big-num small {
   font-size: 15px;
   font-weight: 600;
-  color: var(--muted);
+  color: inherit;
 }
 
 .big-num.sm {
@@ -544,6 +651,12 @@
   bottom: 21px;
 }
 
+/* 6px between the title and the intro text: the column's 16px gap, less 10. */
+.screen-full .app-head {
+  padding-bottom: 0;
+  margin-bottom: -10px;
+}
+
 .setup-top {
   display: flex;
   align-items: center;
@@ -551,16 +664,32 @@
   min-height: 32px;
 }
 
+.setup-top .progress-bar__track {
+  height: 8px;
+  border-radius: 999px;
+}
+
+.setup-top .progress-bar__fill {
+  border-radius: 999px;
+}
+
 .setup-page {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .setup-lede {
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 16px;
+  line-height: 1.5;
   color: var(--muted);
+}
+
+/* A real app's icon fills the tile. */
+.app-icon {
+  object-fit: cover;
+  /* A hairline keeps a white icon from melting into the card. */
+  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12);
 }
 
 .setup-rows li {
@@ -581,69 +710,273 @@
 
 /* ---------- Today ---------- */
 
-.rings {
+/* An open header with the companion, a full-width path chart, then tiles. */
+.screen-today .app-scroll {
+  padding-top: 54px;
+  gap: 10px;
+}
+
+.today-hero {
+  flex: none;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  text-align: center;
+  place-items: center;
+  height: 126px;
+  margin: 0 -20px;
 }
 
-.vital {
-  position: relative;
+.today-path {
+  margin: 4px -20px 0;
+}
+
+.path-heading {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 15px;
 }
 
-.ring-icon {
-  position: absolute;
-  top: 26px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-}
-
-.vital > svg {
-  transform: rotate(-90deg);
-}
-
-.vital > svg circle {
-  fill: none;
-  stroke-width: 9;
-  stroke-linecap: round;
-}
-
-.ring-track {
-  opacity: 0.18;
-}
-
-.vital strong {
-  margin-top: 8px;
-  font-size: 17px;
+.path-heading > span:last-child {
+  font-family: var(--rounded);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  color: var(--app-heart);
 }
 
-.vital span {
-  font-size: 13px;
+/* Three tones of the heart colour: a deeper band, the colour itself, a lighter one. */
+.rhythm-band {
+  fill: var(--app-heart);
+}
+
+.rhythm-band.deep {
+  fill: color-mix(in srgb, var(--app-heart) 88%, #000);
+}
+
+.rhythm-band.light {
+  fill: color-mix(in srgb, var(--app-heart) 86%, #fff);
+}
+
+.rhythm-path svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.rhythm-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.rhythm-labels .current {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+/* Sits directly under the chart's title. */
+.path-heading .card-foot {
+  margin-top: 2px;
+}
+
+.path-heading {
+  margin-bottom: 8px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* More air between the chart and the section below it on Today. */
+.screen-today .section-heading {
+  margin-top: 20px;
+}
+
+.section-heading h5,
+.card-section-title {
+  margin: 0;
+  font-family: var(--rounded);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.section-heading > span:not(.src-tag) {
+  font-size: 12px;
   color: var(--muted);
 }
 
-.spark {
+.card-section-title {
+  font-size: 18px;
+  margin-bottom: 18px;
+}
+
+.metric-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.card.metric-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px 12px;
+  gap: 6px;
+  box-shadow: 0 6px 20px rgb(27 26 29 / 0.035);
+}
+
+.metric-tile .card-label {
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.metric-tile .card-label svg {
+  width: 19px;
+  height: 19px;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.metric-status {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.dot-spark {
   display: block;
   width: 100%;
-  margin-top: 8px;
+  height: auto;
 }
 
-.baseline-band {
-  fill: rgb(255 45 85 / 0.08);
+.dot-spark-band {
+  fill: #f7f7f8;
 }
 
-.spark-line {
+.dot-spark-line {
   fill: none;
-  stroke: var(--app-heart);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke: #c8c7ca;
+  stroke-width: 2;
 }
+
+.dot-spark-point {
+  fill: var(--app-card);
+  stroke: #c8c7ca;
+  stroke-width: 2;
+}
+
+.metric-tile .dot-spark {
+  margin-top: 2px;
+}
+
+.metric-detail-row {
+  display: grid;
+  grid-template-columns: 1fr 148px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.status-normal {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  color: var(--app-positive);
+  font-size: 13px;
+}
+
+/* The weekly summary sits open on the canvas, without a card behind it. */
+.card.open-summary {
+  padding: 0 0 8px;
+  background: transparent;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.card.sleep-summary {
+  background: #15001f;
+  color: #fff;
+}
+
+.sleep-summary .card-label {
+  color: #fff;
+}
+
+.sleep-summary .delta.down {
+  color: #bbc9f2;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.sleep-summary .big-num.sm {
+  font-size: 25px;
+}
+
+.sleep-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 5px;
+  height: 62px;
+  margin-top: 14px;
+}
+
+.sleep-bars > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.sleep-bars span {
+  display: block;
+  width: 100%;
+  background: #528fed;
+  border-radius: 3px;
+}
+
+.sleep-bars > div:nth-child(even) span {
+  background: #75c1fe;
+}
+
+.sleep-bars small {
+  font-size: 12px;
+  color: #c1b4cc;
+}
+
+/* Tags distinguish sensor data from what the user reported. */
+.src-tag {
+  /* Hugs its text even inside a card's stretched column. */
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.src-tag.sensor { background: var(--app-fill); color: var(--muted); }
+.src-tag.you { background: var(--context-soft); color: var(--context); }
+.src-tag.pos { background: var(--body-soft); color: var(--app-positive); }
+.src-tag.neutral { background: var(--app-fill); color: var(--muted); }
 
 .nudge {
   display: flex;
@@ -660,53 +993,72 @@
 .nudge span:not(.orb-mini) {
   display: block;
   margin-top: 2px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.3;
   color: var(--muted);
 }
 
-/* The companion orb: warm (lived context) blending into violet (care). */
-.orb,
-.orb-mini {
-  background:
-    radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.85), transparent 28%),
-    radial-gradient(circle at 70% 75%, #af52de, transparent 55%),
-    radial-gradient(circle at 40% 40%, #ffb86b, #ff9500 45%, #ff2d55 80%);
-}
-
+/* The companion: a soft blue square in corner brackets, with a face. The
+   shape is drawn by the SVG, so the wrappers only size it. */
 .orb-mini {
   display: inline-block;
   flex: none;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px -4px rgb(255 45 85 / 0.5);
+}
+
+.face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.face-fill {
+  fill: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+.face-frame,
+.face-mouth {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.face-mouth {
+  stroke-width: 4.5;
+}
+
+.face-eye,
+.face-mouth-open {
+  fill: var(--accent);
 }
 
 /* ---------- Capture ---------- */
 
-.recorder {
+/* The recorder sits open on the canvas, without a card behind it. */
+.card.recorder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 32px 16px 24px;
+  gap: 12px;
+  padding: 8px 16px 20px;
+  background: transparent;
 }
 
 .orb-wrap {
-  position: relative;
   display: grid;
-  place-items: center;
+  justify-items: center;
+  gap: 12px;
 }
 
 .orb {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
-  box-shadow: 0 16px 40px -12px rgb(255 45 85 / 0.55);
 }
 
+/* Under the dot, so it does not sit on the face. */
 .timer {
-  position: absolute;
-  color: #fff;
+  color: var(--foreground);
   font-size: 22px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -723,14 +1075,14 @@
   width: 4px;
   height: 36px;
   border-radius: 2px;
-  background: var(--app-heart);
+  background: var(--accent);
 }
 
 .transcript {
   margin-top: 6px;
   min-height: 88px;
   font-size: 17px;
-  line-height: 22px;
+  line-height: 1.45;
 }
 
 .caret {
@@ -756,11 +1108,36 @@
   color: var(--muted);
 }
 
+/* Confirmation: a glass capsule rising above the tab bar. */
+.app-toast {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 170px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  translate: -50% 0;
+  white-space: nowrap;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.app-toast svg {
+  color: var(--app-activity);
+}
+
 /* ---------- Structure ---------- */
 
 .quote-sm {
   font-size: 17px;
-  line-height: 22px;
+  line-height: 1.45;
   font-style: italic;
 }
 
@@ -769,6 +1146,22 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+}
+
+.chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--app-fill);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.chips-warm span {
+  background: var(--context-soft);
+  color: var(--context);
 }
 
 .facts {
@@ -792,35 +1185,40 @@
 
 /* ---------- Connect ---------- */
 
+/* Cause hugs the left edge, effect the right; the line takes what is left. */
 .link-row {
-  display: grid;
-  grid-template-columns: 1fr 36px 1fr;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .node {
-  padding: 8px;
+  flex: none;
+  padding: 8px 12px;
   border-radius: 12px;
-  background: var(--default);
+  background: var(--app-fill);
   font-size: 13px;
   font-weight: 600;
   text-align: center;
+  white-space: nowrap;
+}
+
+.node-pos {
+  background: var(--body-soft);
+  color: var(--app-positive);
 }
 
 .link-line {
-  width: 100%;
+  flex: 1;
+  min-width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--app-stress);
+  transform-origin: left;
 }
 
-.link-line path {
-  fill: none;
-  stroke: var(--app-stress);
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.link-line path.positive {
-  stroke: var(--app-activity);
+.link-line.positive {
+  background: var(--app-activity);
 }
 
 .evidence {
@@ -833,11 +1231,55 @@
   font-variant-numeric: tabular-nums;
 }
 
+.strength {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--app-fill);
+  overflow: hidden;
+}
+
+.strength span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--app-stress);
+}
+
+.strength span.positive {
+  background: var(--app-activity);
+}
+
+/* Inline notes sit on the canvas: a small icon and quiet text. */
+.note {
+  display: flex;
+  /* The icon sits at the vertical middle of its text, however many lines. */
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.note svg {
+  flex: none;
+}
+
+.note.success svg {
+  color: var(--app-positive);
+}
+
+.note b {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
 /* ---------- Weekly ---------- */
 
 .summary {
   font-size: 17px;
-  line-height: 22px;
+  line-height: 1.45;
 }
 
 .ai-label {
@@ -847,7 +1289,7 @@
   margin-bottom: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--app-heart);
+  color: var(--foreground);
 }
 
 .delta {
@@ -864,8 +1306,8 @@
   margin-top: 1px;
 }
 
-.delta.up { color: #c46a00; }
-.delta.down { color: #0a84a8; }
+.delta.up { color: var(--app-link); }
+.delta.down { color: var(--ai); }
 
 .bars {
   display: grid;
@@ -886,7 +1328,7 @@
   flex: 1;
   width: 100%;
   border-radius: 6px;
-  background: rgb(255 149 0 / 0.25);
+  background: var(--context-soft);
   transform-origin: bottom;
 }
 
@@ -958,7 +1400,7 @@
 .pattern p {
   margin-top: 10px;
   font-size: 17px;
-  line-height: 22px;
+  line-height: 1.45;
 }
 
 /* ---------- Share ---------- */
@@ -1023,17 +1465,67 @@
   width: 30px;
   height: 30px;
   flex: none;
-  border-radius: 8px;
+  border-radius: var(--card-inset-radius);
+  /* Light blue tile, darker blue icon, on every list row. */
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+}
+
+/* iOS 26/27 switch: wider capsule track, pill-shaped knob. */
+.app-switch {
+  display: flex;
+  flex: none;
+  width: 64px;
+  height: 28px;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(120 120 128 / 0.16);
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+
+.app-switch.on {
+  background: var(--app-activity);
+}
+
+.app-switch:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.app-switch span {
+  width: 38px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.14), 0 0 0 0.5px rgb(0 0 0 / 0.04);
+  /* The slide is a spring on transform; the press uses scale, so the two
+     don't fight over the same property. */
+  transition: scale 0.15s ease-out, background-color 0.15s;
+}
+
+/* While pressed, the knob swells into a glass lens. */
+.app-switch:active:not(:disabled) span {
+  scale: 1.18;
+  background: rgb(255 255 255 / 0.85);
 }
 
 .shared-state {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px;
-  border-radius: 24px;
-  background: rgb(52 199 89 / 0.12);
+  padding: var(--card-padding);
+  border-radius: var(--card-radius);
+  background: var(--body-soft);
   font-size: 15px;
+}
+
+/* Inside the green panel the confirmation reads at full size. */
+.shared-state .note {
+  padding: 0;
+  font-size: 15px;
+  color: var(--foreground);
 }
 
 /* ---------- Care: two perspectives ---------- */
@@ -1128,29 +1620,74 @@
   }
 }
 
-/* ---------- HeroUI inside the phone ---------- */
+/* ---------- Tab bar: floating Liquid Glass capsule ---------- */
 
-/* Tab bar and the saved confirmation float above the content. */
 .tabbar {
   position: absolute;
   z-index: 3;
-  left: 16px;
-  right: 16px;
+  left: 21px;
+  right: 21px;
   bottom: 25px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  height: 62px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-shadow);
 }
 
-.saved-toast {
-  position: absolute;
-  z-index: 4;
-  left: 16px;
-  right: 16px;
-  bottom: 170px;
-}
-
-.shared-state {
+.tabbar button {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.12s ease-out;
+}
+
+.tabbar button > svg,
+.tabbar button > span:not(.tab-lens) {
+  position: relative;
+}
+
+.tabbar button:active {
+  transform: scale(0.94);
+}
+
+.tabbar button.on {
+  color: var(--app-link);
+}
+
+.tabbar button.on > svg {
+  color: var(--accent);
+  stroke-width: 2.5;
+}
+
+.tab-lens {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #eaeaef;
+}
+
+.tabbar button:focus-visible,
+.app-switch:focus-visible,
+.glass-circle:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
 }
 
 .view-toggle {
@@ -1158,29 +1695,74 @@
   max-width: 280px;
 }
 
-/* ---------- Button sizes: Apple's touch metrics ---------- */
+/* ---------- Buttons ---------- */
 
 /* The phone is drawn in points, so HeroUI's desktop heights are too small here.
-   Nothing tappable is under 44pt; main actions are 50pt with a 17pt label. */
+   Nothing tappable is under 44pt; main actions are 52pt with a 17pt label. */
 .phone .button--lg {
-  height: 50px;
+  height: 52px;
   padding-inline: 20px;
+  border-radius: 999px;
   font-size: 17px;
   font-weight: 600;
 }
 
-/* Secondary full-width actions: Skip, Not now, Revoke access. */
-.phone .button--md {
+.phone .app-primary {
+  box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
+}
+
+/* Regular glass button with a destructive label. */
+.phone .app-danger {
+  height: 50px;
+  --button-fg: var(--danger);
+  --button-bg: var(--glass-bg);
+  --button-bg-hover: var(--glass-bg);
+  --button-bg-pressed: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), 0 2px 8px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Plain text button in the link colour: Skip, Not now, Revoke access. */
+.phone .app-link {
   height: 44px;
+  --button-fg: var(--app-link);
   font-size: 17px;
+  font-weight: 400;
+}
+
+.phone .app-link.danger {
+  --button-fg: var(--danger);
 }
 
 /* Row buttons (Connect, Invite, Send) look compact but still take a 44pt tap. */
 .phone .button--sm {
   height: 34px;
   padding-inline: 14px;
+  border-radius: 999px;
   font-size: 15px;
   font-weight: 600;
+}
+
+/* Connected / Invited: the row button turns green once it is done. */
+.phone .pill-done {
+  --button-bg: var(--body-soft);
+  --button-bg-hover: var(--body-soft);
+  --button-bg-pressed: var(--body-soft);
+  --button-fg: var(--app-positive);
+}
+
+/* One button under the cards that turns on every row on the page. */
+.phone .connect-all {
+  height: 44px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Done is a state, not a disabled control: keep it at full strength. */
+.phone .pill-done {
+  opacity: 1;
 }
 
 .phone .button--sm::after {
@@ -1199,21 +1781,11 @@
   content: none;
 }
 
-.phone .switch__content {
-  min-width: 44px;
-  min-height: 44px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.phone .tabbar .tabs__tab {
-  min-height: 48px;
-}
-
 /* Page-level buttons follow the same floor. */
 .proto-back.button {
   height: 44px;
   padding-inline: 16px;
+  border-radius: 999px;
   font-size: 15px;
 }
 
@@ -1221,13 +1793,8 @@
   height: 44px;
 }
 
-/* Tab bars are taller than HeroUI's default, so their corners are made
-   concentric: a full capsule outside, a full capsule for the selected tab. */
-.phone .tabbar .tabs__list-container,
 .view-toggle .tabs__list-container,
-.phone .tabbar .tabs__tab,
 .view-toggle .tabs__tab,
-.phone .tabbar .tabs__indicator,
 .view-toggle .tabs__indicator {
   border-radius: 999px;
 }

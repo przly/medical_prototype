@@ -119,43 +119,43 @@ function Fragmented() {
 const problems = [
   {
     viz: NoContext,
-    color: "#ff2d55",
+    color: "#698edb",
     title: "Data without context",
-    text: "Your wearable shows that something changed. It doesn’t know what was happening in your life.",
+    text: "Your wearable shows that something changed. It can’t tell what was going on in your life at the time.",
   },
   {
     viz: NoTrends,
-    color: "#30b0c7",
+    color: "#528fed",
     title: "No trends over time",
-    text: "Nothing shows how your mental and physical health change over months.",
+    text: "Nothing shows how your mental and physical health change from month to month.",
   },
   {
     viz: Memory,
-    color: "#ff9500",
+    color: "#f47d4d",
     title: "Your timeline comes from memory",
     text: "When your GP asks how the past weeks went, you can only report what you remember.",
   },
   {
     viz: Fragmented,
-    color: "#af52de",
+    color: "#6842c7",
     title: "Your file doesn’t travel",
-    text: "Care systems are fragmented, so not every doctor can see your records.",
+    text: "Your records sit in separate systems, so not every doctor can see them.",
   },
 ];
 
 /* ---------- Scene 2 · what prevention changes ---------- */
 
 const system = [
-  [Coins, "#34c759", "Treatment costs", "down", "Lower"],
-  [BedDouble, "#30b0c7", "Hospitalizations", "down", "Fewer"],
-  [Ambulance, "#ff2d55", "Emergency visits", "down", "Fewer"],
-  [Scale, "#5856d6", "Resource allocation", "up", "Better"],
+  [Coins, "#28c886", "Treatment costs", "down", "Lower"],
+  [BedDouble, "#528fed", "Hospital admissions", "down", "Fewer"],
+  [Ambulance, "#698edb", "Emergency visits", "down", "Fewer"],
+  [Scale, "#4167ad", "How resources are used", "up", "Better"],
 ];
 
 const you = [
-  [ScanSearch, "#34c759", "Outcomes, because problems are found earlier", "up", "Better"],
-  [Briefcase, "#ff9500", "Sick days off work", "down", "Fewer"],
-  [Eye, "#af52de", "Self-awareness, so you can act sooner", "up", "Better"],
+  [ScanSearch, "#28c886", "Treatment results", "up", "Better"],
+  [Briefcase, "#f47d4d", "Sick days", "down", "Fewer"],
+  [Eye, "#6842c7", "Health awareness", "up", "Better"],
 ];
 
 function Benefits({ title, rows }) {
@@ -188,23 +188,61 @@ function Benefits({ title, rows }) {
 function Curve() {
   return (
     <MotionCard className="intro-card curve" variants={item}>
-      <svg viewBox="0 0 640 240" role="img" aria-label="Illustration: a problem noticed late grows large, the same problem noticed early stays small.">
-        <line x1="0" y1="228" x2="640" y2="228" className="curve-axis" />
-        <motion.path
-          d="M0 212 C160 209 260 198 360 130 S520 31 640 23"
-          className="curve-late"
-          {...draw(0.3)}
-        />
-        <motion.path
-          d="M0 212 C120 210 180 206 230 196 C300 182 400 200 640 206"
-          className="curve-early"
-          {...draw(0.6)}
-        />
-        <circle cx="230" cy="196" r="8" className="curve-dot" />
-      </svg>
+      <div className="curve-plot">
+        <svg viewBox="0 0 640 240" role="img" aria-label="Illustration: a problem noticed late grows large, the same problem noticed early stays small.">
+          <line x1="1" y1="0" x2="1" y2="228" className="curve-axis" />
+          <line x1="0" y1="228" x2="640" y2="228" className="curve-axis" />
+          {/* Both lines share one path until the problem is noticed (the dot):
+              the early line is the first half of the late curve, then turns
+              back down. The early line is drawn on top, so the late one
+              branches off it. */}
+          {/* The lines keep a fixed on-screen thickness, so they are revealed
+              by a growing clip rather than by a dash-based draw. */}
+          <clipPath id="curve-reveal">
+            <motion.rect
+              y="0"
+              height="240"
+              initial={{ width: 0 }}
+              animate={{ width: 648 }}
+              transition={{ duration: 1.2, ease, delay: 0.3 }}
+            />
+          </clipPath>
+          <g clipPath="url(#curve-reveal)">
+            <path d="M0 212 C160 209 260 198 360 130 S520 31 640 23" className="curve-late" />
+            <path
+              d="M0 212 C80 210.5 145 207 202.5 195.4 C237 188.4 400 200 640 206"
+              className="curve-early"
+            />
+          </g>
+          <circle cx="202.5" cy="195.4" r="8" className="curve-dot" />
+        </svg>
+        {/* Sits above the dot; positioned in the chart's own coordinates. */}
+        <motion.span
+          className="curve-mark"
+          style={{ left: `${(202.5 / 640) * 100}%`, top: `${(195.4 / 240) * 100}%` }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 1 }}
+        >
+          Noticed
+        </motion.span>
+        <span className="curve-y">Severity</span>
+      </div>
+      <span className="curve-x">Time</span>
       <div className="curve-legend">
-        <span className="late"><i />Noticed late, it takes treatment and time off</span>
-        <span className="early"><i />Noticed early, a small change can be enough</span>
+        {/* Each key is a short sample of its line: same colour, same stroke. */}
+        <span>
+          <svg viewBox="0 0 30 6" aria-hidden="true">
+            <line x1="3" y1="3" x2="27" y2="3" className="curve-late" />
+          </svg>
+          Noticed late, it takes treatment and time off
+        </span>
+        <span>
+          <svg viewBox="0 0 30 6" aria-hidden="true">
+            <line x1="3" y1="3" x2="27" y2="3" className="curve-early" />
+          </svg>
+          Noticed early, a small change can be enough
+        </span>
       </div>
     </MotionCard>
   );
@@ -214,17 +252,17 @@ function Curve() {
 
 const scenes = [
   {
-    tint: "#ff9500",
+    tint: "#f47d4d",
     eyebrow: "The world today",
     title: "No one sees your whole health picture.",
-    lede: "Your watch has the numbers and each doctor has part of your file. You don’t get an overview either.",
+    lede: "Your watch has the numbers and each doctor has part of your file. Nobody has the overview, including you.",
     next: "What could change",
   },
   {
-    tint: "#34c759",
+    tint: "#28c886",
     eyebrow: "What prevention changes",
     title: "Problems caught early are easier to treat.",
-    lede: "Better preventative care helps you and takes pressure off the care system.",
+    lede: "Prevention helps you, and it takes pressure off the care system.",
     next: "See how it works",
   },
 ];
@@ -234,19 +272,6 @@ export default function Intro({ stage, go }) {
 
   return (
     <>
-      <div className="ambient" aria-hidden="true">
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={scene.tint}
-            className="ambient-glow"
-            style={{ "--glow": scene.tint }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          />
-        </AnimatePresence>
-      </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.section
           key={stage}
@@ -268,15 +293,17 @@ export default function Intro({ stage, go }) {
               {problems.map(({ viz: Viz, color, title, text }) => (
                 <MotionCard
                   key={title}
-                  className="intro-card"
+                  className="intro-card problem-card"
                   style={{ "--k": color }}
                   variants={item}
                 >
                   <div className="viz">
                     <Viz />
                   </div>
-                  <h2>{title}</h2>
-                  <p>{text}</p>
+                  <div className="intro-card-text">
+                    <h2>{title}</h2>
+                    <p>{text}</p>
+                  </div>
                 </MotionCard>
               ))}
             </div>

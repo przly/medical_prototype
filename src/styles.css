@@ -1,30 +1,49 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
-/* Colours, radii and component styles come from HeroUI's default theme.
-   Only the layer colours for the story steps are our own. */
-:root {
-  --body: #2f7d6d;
-  --body-soft: #e0efea;
-  --context: #c27a2c;
-  --context-soft: #f7ead9;
-  --care: #6b5ca5;
-  --care-soft: #ebe7f5;
-  --ai: #1d2320;
-  --ai-soft: #e9e7e2;
+/* The app's palette: a white canvas, soft grey cards and one brand blue.
+   Declared on the theme selectors too, so HeroUI's components pick it up
+   wherever they re-declare their light theme (the phone does). */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --brand: #0485f7;
+  --brand-ink: #005cae;
+  --brand-soft: #e5f2ff;
 
-  --sans: "Inter", system-ui, -apple-system, sans-serif;
+  --background: #ffffff;
+  --foreground: #1b1a1d;
+  --surface: #f8f8f8;
+  --muted: #6d6c73;
+  --border: #e5e5e9;
+  --separator: #e5e5e9;
+  --default: #eaeaef;
+  --default-foreground: #1b1a1d;
+  --accent: var(--brand);
+  --accent-foreground: #ffffff;
+  --success: #28c886;
+  --warning: #f47d4d;
+  --danger: #c23b39;
 }
 
-[data-theme="dark"] {
-  --body: #5fbfa9;
-  --body-soft: #1d3530;
-  --context: #e3a45e;
-  --context-soft: #3a2b1b;
-  --care: #a79ae0;
-  --care-soft: #2a2640;
-  --ai: #ecefe9;
-  --ai-soft: #2a302d;
+:root {
+  --body: #087c53;
+  --body-soft: #dcf5e9;
+  --context: var(--brand-ink);
+  --context-soft: var(--brand-soft);
+  --care: #6842c7;
+  --care-soft: #eee8fa;
+  --ai: #4167ad;
+  --ai-soft: #e6eefb;
+
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --rounded: ui-rounded, "SF Pro Rounded", var(--sans);
+
+  /* One corner radius for every card-like surface. Anything nested inside a
+     card is concentric: card radius minus the card's 16px padding. */
+  --card-radius: 24px;
+  --card-padding: 16px;
+  --card-inset-radius: calc(var(--card-radius) - var(--card-padding));
 }
 
 *,
@@ -94,4 +113,9 @@ em {
 /* Cards sit flat on the page: no shadow. */
 .card {
   box-shadow: none;
+}
+
+.card,
+.alert {
+  border-radius: var(--card-radius);
 }
