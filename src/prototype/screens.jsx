@@ -15,13 +15,11 @@ import {
   Check,
   ChevronLeft,
   CircleCheck,
-  ClipboardList,
   Dumbbell,
   FileText,
   Flame,
   FlaskConical,
   Footprints,
-  Frown,
   Headphones,
   Heart,
   HeartPulse,
@@ -252,16 +250,6 @@ function Primary({ children, icon: ButtonIcon, onClick, disabled }) {
 function Danger({ children, icon: ButtonIcon, onClick }) {
   return (
     <Button fullWidth size="lg" variant="danger-soft" className="app-danger" onPress={onClick}>
-      {ButtonIcon && <ButtonIcon {...iconProps} />}
-      {children}
-    </Button>
-  );
-}
-
-// Neutral glass button, for a pair of equal choices.
-function Secondary({ children, icon: ButtonIcon, onClick, disabled }) {
-  return (
-    <Button fullWidth size="lg" variant="secondary" className="app-secondary" onPress={onClick} isDisabled={disabled}>
       {ButtonIcon && <ButtonIcon {...iconProps} />}
       {children}
     </Button>
@@ -600,7 +588,7 @@ function Onboarding({ next }) {
   );
 }
 
-// The week's stress, sleep and activity cards, shown on Today and on Your week.
+// The week's stress, sleep and activity cards, shown on Today.
 const stressWeek = [0.35, 0.8, 0.9, 0.85, 0.5, 0.3, 0.25];
 const days = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -966,12 +954,21 @@ const insights = [
   },
 ];
 
+// The long view on the Insights screen. Twelve weekly values per signal, against its baseline and usual range. The
+// first weeks sit inside the range; the last five drift away from it.
+const rows = [
+  { label: "Sleep", metric: "sleep", dir: "down", trend: "worse", change: "Lower", baseline: 7.5, band: 0.25, v: [7.5, 7.4, 7.6, 7.5, 7.3, 7.5, 7.4, 7.2, 7.1, 6.9, 6.8, 6.7] },
+  { label: "Stress", metric: "stress", dir: "up", trend: "worse", change: "Higher", baseline: 35, band: 6, v: [34, 36, 33, 35, 37, 34, 38, 41, 45, 48, 53, 58] },
+  { label: "Mood", metric: "mood", dir: "down", trend: "worse", change: "Lower", baseline: 4, band: 0.25, v: [4.1, 4, 4.2, 3.9, 4, 4.1, 3.9, 3.7, 3.6, 3.4, 3.3, 3.1] },
+  { label: "Exercise", metric: "activity", dir: "flat", change: "Stable", baseline: 3, band: 1, v: [3, 3, 4, 3, 2, 3, 3, 4, 3, 3, 2, 3] },
+];
+
 function Connect({ next }) {
   return (
     <Screen
       eyebrow="Last 2 weeks"
       title="Insights"
-      action={<Primary icon={CalendarDays} onClick={next}>Open weekly overview</Primary>}
+      action={<Primary icon={Stethoscope} onClick={next}>Set up meeting with a doctor</Primary>}
     >
       {/* The companion says what it found, in its own speech bubble. */}
       <motion.div className="ai-says" variants={item}>
@@ -1021,76 +1018,8 @@ function Connect({ next }) {
           </ul>
         </Card>
       ))}
-      <Note icon={Info}>
-        These things <b>happened together</b>. That doesn’t mean one caused the other.
-      </Note>
-    </Screen>
-  );
-}
-
-/* 06 · Reflect — Weekly overview */
-function Weekly({ next }) {
-  // Feeling good is noted here; not feeling good leads on to the longer view.
-  const [good, setGood] = useState(false);
-  const feelGood = () => {
-    haptic();
-    setGood(true);
-  };
-
-  return (
-    <Screen
-      eyebrow="7 – 13 October"
-      title="Your week"
-      action={
-        <div className="action-pair">
-          <Secondary icon={good ? Check : Smile} onClick={feelGood} disabled={good}>
-            {good ? "Noted" : "I feel good"}
-          </Secondary>
-          <Secondary icon={Frown} onClick={next}>I don’t feel good</Secondary>
-        </div>
-      }
-    >
-      <motion.div className="ai-says" variants={item}>
-        <Orb size={44} />
-        <p>
-          I noticed a more stressful week than usual, with lower sleep and energy. Your
-          reflections often mentioned <b>work deadlines</b>.
-        </p>
-      </motion.div>
-      <div className="section-heading"><h5>Weekly signals</h5><span>7 days</span></div>
-      <SignalCards />
       <Card>
-        <Label metric="mood">Mood</Label>
-        <div className="mood">
-          {[0.7, 0.7, 0.45, 0.4, 0.65, 0.75, 0.8].map((v, i) => (
-            <span key={i} style={{ "--m": v }} title={days[i]} />
-          ))}
-        </div>
-        <p className="card-foot">Mostly steady, lower on Wednesday and Thursday.</p>
-      </Card>
-    </Screen>
-  );
-}
-
-/* 07 · Learn — Pattern map */
-// Twelve weekly values per signal, against its baseline and usual range. The
-// first weeks sit inside the range; the last five drift away from it.
-const rows = [
-  { label: "Sleep", metric: "sleep", dir: "down", trend: "worse", change: "Lower", baseline: 7.5, band: 0.25, v: [7.5, 7.4, 7.6, 7.5, 7.3, 7.5, 7.4, 7.2, 7.1, 6.9, 6.8, 6.7] },
-  { label: "Stress", metric: "stress", dir: "up", trend: "worse", change: "Higher", baseline: 35, band: 6, v: [34, 36, 33, 35, 37, 34, 38, 41, 45, 48, 53, 58] },
-  { label: "Mood", metric: "mood", dir: "down", trend: "worse", change: "Lower", baseline: 4, band: 0.25, v: [4.1, 4, 4.2, 3.9, 4, 4.1, 3.9, 3.7, 3.6, 3.4, 3.3, 3.1] },
-  { label: "Exercise", metric: "activity", dir: "flat", change: "Stable", baseline: 3, band: 1, v: [3, 3, 4, 3, 2, 3, 3, 4, 3, 3, 2, 3] },
-];
-
-function Patterns({ next }) {
-  return (
-    <Screen
-      eyebrow="Last 12 weeks"
-      title="Pattern map"
-      action={<Primary icon={ClipboardList} onClick={next}>Set up meeting with a doctor</Primary>}
-    >
-      <Card>
-        <h5 className="card-section-title">Your signals over time</h5>
+        <h5 className="card-section-title">Your signals over 12 weeks</h5>
         <ul className="readings signals">
           {rows.map((r) => {
             const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[r.dir];
@@ -1130,6 +1059,9 @@ function Patterns({ next }) {
         <Tag kind="neutral">Recurring</Tag>
         <p>Shorter sleep often came alongside higher stress and reflections mentioning tiredness.</p>
       </Card>
+      <Note icon={Info}>
+        These things <b>happened together</b>. That doesn’t mean one caused the other.
+      </Note>
     </Screen>
   );
 }
@@ -1765,8 +1697,6 @@ export const screens = [
   Capture,
   Structure,
   Connect,
-  Weekly,
-  Patterns,
   Share,
   PatientSession,
   PatientAccess,

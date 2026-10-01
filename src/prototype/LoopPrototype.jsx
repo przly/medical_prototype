@@ -16,15 +16,15 @@ const ease = [0.22, 1, 0.36, 1];
 const tabs = [
   { label: "Today", icon: "pulse", step: 1, owns: [1] },
   { label: "Logs", icon: "mic", step: 2, owns: [2, 3] },
-  { label: "Insights", icon: "map", step: 5, owns: [4, 5, 6] },
-  { label: "Care", icon: "shield", step: 7, owns: [7, 8, 9] },
+  { label: "Insights", icon: "map", step: 4, owns: [4] },
+  { label: "Care", icon: "shield", step: 5, owns: [5, 6, 7] },
 ];
 
 // The doctor's app has one tab per shared step.
 const doctorTabs = [
-  { label: "Overview", icon: "map", step: 7, owns: [7] },
-  { label: "Session", icon: "chat", step: 8, owns: [8] },
-  { label: "Access", icon: "key", step: 9, owns: [9] },
+  { label: "Overview", icon: "map", step: 5, owns: [5] },
+  { label: "Session", icon: "chat", step: 6, owns: [6] },
+  { label: "Access", icon: "key", step: 7, owns: [7] },
 ];
 
 // Where a flick would come to rest, using Apple's scroll deceleration.

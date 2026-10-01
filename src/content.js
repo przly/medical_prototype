@@ -56,28 +56,9 @@ export const steps = [
     title: "The two kinds of data start to line up",
     story: [
       "As the weeks add up, the app notices things that keep happening together: higher stress on 4 of the 5 days he mentioned deadlines, and a better mood on days he exercised.",
+      "Below, his signals over twelve weeks show the longer pattern: sleep and mood drifting down and stress up, while exercise holds steady.",
       "It tells him they happened together. It does not claim one caused the other.",
-    ],
-  },
-  {
-    verb: "Your week",
-    layer: "context",
-    icon: "calendar",
-    when: "Week 10 · Sunday evening",
-    title: "His week in under a minute",
-    story: [
-      "No alerts arrive during the week. On Sunday the weekly overview tells Felix what changed: more stress than usual, 48 minutes less sleep than his baseline, and work deadlines in most of his reflections.",
-    ],
-  },
-  {
-    verb: "Pattern map",
-    layer: "body",
-    icon: "map",
-    when: "Week 11 · Thursday",
-    title: "“I feel really bad”",
-    story: [
-      "Felix logs that he is exhausted and his heart is racing, for the third day in a row. The pattern map shows what this feeling relates to in his data: short sleep has often come with higher stress and tiredness, and weeks with exercise with a better mood.",
-      "It has lasted more than two weeks and is well outside his usual range, so the app suggests discussing it with his GP. He taps “Prepare for my session”.",
+      "The drift has lasted more than two weeks and is well outside his usual range, so the app suggests discussing it with his GP. He taps “Set up meeting with a doctor”.",
     ],
   },
   {

@@ -1621,22 +1621,6 @@
   gap: 12px;
 }
 
-.mood {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  height: 40px;
-  margin-top: 12px;
-}
-
-.mood span {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--app-mood);
-  transform: translateY(calc((0.8 - var(--m)) * 60px));
-}
-
 /* ---------- Patterns ---------- */
 
 /* Signals over twelve weeks: the name and its direction, then a wide chart. */
@@ -1962,28 +1946,6 @@
 
 .phone .app-primary {
   box-shadow: 0 3px 10px rgb(4 133 247 / 0.16);
-}
-
-/* Two equal choices side by side in the pinned action. */
-.action-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-/* Regular glass button with a neutral label. */
-.phone .app-secondary {
-  height: 50px;
-  padding-inline: 8px;
-  gap: 6px;
-  white-space: nowrap;
-  --button-fg: var(--foreground);
-  --button-bg: var(--glass-bg);
-  --button-bg-hover: var(--glass-bg);
-  --button-bg-pressed: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-edge), 0 2px 8px -2px rgb(0 0 0 / 0.1);
 }
 
 /* Regular glass button with a destructive label. */
