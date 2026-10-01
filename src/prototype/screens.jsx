@@ -802,27 +802,28 @@ function Structure({ next }) {
     <Screen
       eyebrow="Today, 16:42 · 20 sec"
       title="Log"
-      action={<Primary icon={Waypoints} onClick={next}>See connections</Primary>}
+      action={<Primary icon={Waypoints} onClick={next}>See insights</Primary>}
     >
-      <Card>
-        <p className="quote-sm">“{transcript}”</p>
-      </Card>
-      <Card>
-        <span className="card-label">Context</span>
-        <div className="chips">
-          <span><Briefcase size={13} strokeWidth={2.25} aria-hidden="true" />Work</span>
-          <span><Presentation size={13} strokeWidth={2.25} aria-hidden="true" />Presentation</span>
-          <span><Moon size={13} strokeWidth={2.25} aria-hidden="true" />Poor sleep</span>
-        </div>
-      </Card>
-      <Card>
+      <Card className="log-card">
         <div className="row-between">
-          <span className="card-label">You said you felt</span>
+          <span className="card-label">You said</span>
           <Tag kind="you">You reported</Tag>
         </div>
-        <div className="chips chips-warm">
-          <span>Stressed</span>
-          <span>Tired</span>
+        <p className="quote-sm">“{transcript}”</p>
+        <div className="log-section">
+          <span className="card-label">Context</span>
+          <div className="chips">
+            <span><Briefcase size={13} strokeWidth={2.25} aria-hidden="true" />Work</span>
+            <span><Presentation size={13} strokeWidth={2.25} aria-hidden="true" />Presentation</span>
+            <span><Moon size={13} strokeWidth={2.25} aria-hidden="true" />Poor sleep</span>
+          </div>
+        </div>
+        <div className="log-section">
+          <span className="card-label">You said you felt</span>
+          <div className="chips chips-warm">
+            <span>Stressed</span>
+            <span>Tired</span>
+          </div>
         </div>
       </Card>
       <Card>
@@ -852,43 +853,92 @@ function Structure({ next }) {
 }
 
 /* 05 · Connect — associations */
-const links = [
-  { a: "Work deadlines", b: "Higher stress", n: "4 of 5 days", strength: 0.8 },
-  { a: "Short sleep", b: "Feeling tired", n: "6 of 8 days", strength: 0.75 },
-  { a: "Exercise", b: "Better mood", n: "3 of 4 days", strength: 0.6, positive: true },
+// Each insight is one plain sentence and how often it held: `n` of `of` days.
+// Under it sit its two sources: what the sensors measured and what she said.
+const insights = [
+  {
+    metric: "stress",
+    lead: "Higher stress",
+    rest: "on days with work deadlines",
+    n: 4,
+    of: 5,
+    sensor: "Stress high on 4 days, HRV 12 ms below baseline",
+    you: "Mentioned work deadlines in 5 logs",
+  },
+  {
+    metric: "sleep",
+    lead: "Feeling tired",
+    rest: "after a short night’s sleep",
+    n: 6,
+    of: 8,
+    sensor: "Under 6 hours of sleep on 8 nights",
+    you: "Said you felt tired after 6 of them",
+  },
+  {
+    metric: "activity",
+    lead: "Better mood",
+    rest: "on days you exercised",
+    n: 3,
+    of: 4,
+    positive: true,
+    sensor: "4 workouts, 35 minutes on average",
+    you: "Logged a good mood on 3 of those days",
+  },
 ];
 
 function Connect({ next }) {
   return (
     <Screen
-      eyebrow="What I noticed"
-      title="Connections"
+      eyebrow="Last 2 weeks"
+      title="Insights"
       action={<Primary icon={CalendarDays} onClick={next}>Open weekly overview</Primary>}
     >
-      {links.map((l, i) => (
-        <Card key={l.a} className="link-card">
-          <div className="link-row">
-            <span className="node">{l.a}</span>
-            <motion.span
-              className={`link-line ${l.positive ? "positive" : ""}`}
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 0.7, delay: 0.3 + i * 0.15, ease }}
-              aria-hidden="true"
-            />
-            <span className={`node ${l.positive ? "node-pos" : ""}`}>{l.b}</span>
-          </div>
-          <div className="evidence">
-            <div className="strength">
-              <motion.span
-                className={l.positive ? "positive" : ""}
-                initial={{ width: 0 }}
-                animate={{ width: `${l.strength * 100}%` }}
-                transition={{ duration: 0.8, delay: 0.4 + i * 0.15, ease }}
-              />
+      {/* The companion says what it found, in its own speech bubble. */}
+      <motion.div className="ai-says" variants={item}>
+        <Orb size={44} />
+        <p>
+          I noticed <b>3 patterns</b> in your logs and sensor data.
+        </p>
+      </motion.div>
+      {insights.map((it, i) => (
+        <Card key={it.lead} className="insight">
+          <div className="insight-head">
+            <span className={`insight-icon metric-${it.metric}`}>
+              <MetricIcon metric={it.metric} size={20} />
+            </span>
+            <div>
+              <p className="insight-text">
+                <b>{it.lead}</b> {it.rest}
+              </p>
+              <div className="insight-days">
+                <span className="day-dots" aria-hidden="true">
+                  {Array.from({ length: it.of }).map((_, d) => (
+                    <motion.i
+                      key={d}
+                      className={d < it.n ? `on metric-${it.metric}` : ""}
+                      initial={{ scale: 0.4, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ ...spring, delay: 0.35 + i * 0.12 + d * 0.04 }}
+                    />
+                  ))}
+                </span>
+                <span>
+                  {it.n} of {it.of} days
+                </span>
+                {it.positive && <Tag kind="pos">Helps</Tag>}
+              </div>
             </div>
-            <span>{l.n}</span>
           </div>
+          <ul className="insight-sources">
+            <li>
+              <Tag kind="sensor">Sensor</Tag>
+              <span>{it.sensor}</span>
+            </li>
+            <li>
+              <Tag kind="you">You reported</Tag>
+              <span>{it.you}</span>
+            </li>
+          </ul>
         </Card>
       ))}
       <Note icon={Info}>
