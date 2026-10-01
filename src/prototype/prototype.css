@@ -814,8 +814,8 @@
    a band for the usual range and fainter bands either side of it for outliers. */
 .card.vitals {
   gap: 0;
-  /* Dark, like the sleep card. */
-  background: #15001f;
+  /* Deep blue, from the brand colour: lighter at the top, darker at the bottom. */
+  background: linear-gradient(to bottom, #0d5cb0, #04193a);
   color: #fff;
   /* The mood purple is too dark to read here. */
   --app-mood: #a98bf5;
@@ -851,21 +851,21 @@
   left: 50%;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #4b3a53;
+  background: #2f4c70;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
   white-space: nowrap;
-  color: #d9d0dd;
+  color: #d3deec;
 }
 
 .vitals-tag.outlier {
-  background: color-mix(in srgb, var(--app-heart) 30%, #15001f);
+  background: color-mix(in srgb, var(--app-heart) 30%, #062a52);
   color: #ff8a82;
 }
 
 .vitals-tag.better {
-  background: color-mix(in srgb, var(--app-activity) 30%, #15001f);
+  background: color-mix(in srgb, var(--app-activity) 30%, #062a52);
   color: #6fe0ad;
 }
 
@@ -893,7 +893,7 @@
   border-top: 1px solid rgb(255 255 255 / 0.14);
   font-size: 15px;
   font-weight: 600;
-  color: #c1b4cc;
+  color: #b4c6dc;
 }
 
 .vitals-summary strong {
