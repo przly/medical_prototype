@@ -738,9 +738,10 @@ function Capture({ next }) {
         {saved && (
           <motion.div
             className="app-toast"
-            initial={{ opacity: 0, y: 16, scale: 0.94, filter: "blur(6px)" }}
+            // Drops in from under the status bar and leaves the same way.
+            initial={{ opacity: 0, y: -24, scale: 0.94, filter: "blur(6px)" }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: 16, scale: 0.94, filter: "blur(6px)" }}
+            exit={{ opacity: 0, y: -24, scale: 0.94, filter: "blur(6px)" }}
             transition={spring}
           >
             <Check {...iconProps} />

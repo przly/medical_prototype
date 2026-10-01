@@ -1108,12 +1108,12 @@
   color: var(--muted);
 }
 
-/* Confirmation: a glass capsule rising above the tab bar. */
+/* Confirmation: a green capsule that drops in below the status bar. */
 .app-toast {
   position: absolute;
   z-index: 4;
   left: 50%;
-  bottom: 170px;
+  top: 62px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1121,16 +1121,11 @@
   border-radius: 999px;
   translate: -50% 0;
   white-space: nowrap;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-edge), var(--glass-shadow);
+  background: var(--body-soft);
+  color: var(--app-positive);
+  box-shadow: 0 8px 28px -8px rgb(8 124 83 / 0.3), 0 1px 3px rgb(0 0 0 / 0.04);
   font-size: 15px;
   font-weight: 600;
-}
-
-.app-toast svg {
-  color: var(--app-activity);
 }
 
 /* ---------- Structure ---------- */

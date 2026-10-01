@@ -119,3 +119,52 @@ em {
 .alert {
   border-radius: var(--card-radius);
 }
+
+/* QR code to the hosted prototype, pinned to the top right corner with a
+   short invitation beside it. The white tile gives the code the quiet margin
+   scanners need. */
+.page-qr {
+  position: fixed;
+  z-index: 10;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.page-qr span {
+  max-width: 16ch;
+  text-wrap: balance;
+}
+
+/* The call to action gets its own line. */
+.page-qr b {
+  display: block;
+  color: var(--foreground);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.page-qr img {
+  display: block;
+  width: 112px;
+  height: 112px;
+  image-rendering: pixelated;
+}
+
+/* Shown only when the window is wide enough for it to clear the 880px
+   intro column; otherwise the corner belongs to the content. */
+@media (max-width: 1439px) {
+  .page-qr {
+    display: none;
+  }
+}
