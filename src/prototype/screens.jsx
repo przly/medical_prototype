@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { Avatar, Button, Card as HeroCard, ProgressBar } from "@heroui/react";
 import {
   Accessibility,
@@ -49,7 +49,8 @@ import {
   Waypoints,
   Zap,
 } from "lucide-react";
-import { ActivityBars, BaselineSpark, DotSpark, RhythmPath, SleepBars } from "./AppVisuals.jsx";
+import { BlueBlob } from "./BlueBlob.jsx";
+import { ActivityBars, BaselineSpark, DotSpark, SleepBars } from "./AppVisuals.jsx";
 import appleHealthIcon from "../assets/apps/apple-health.jpg";
 import profileImage from "../assets/avatars/annie.jpg";
 import doctorImage from "../assets/avatars/doctor.jpg";
@@ -71,69 +72,24 @@ const metrics = {
   steps: { icon: Footprints, color: "var(--app-activity)" },
 };
 
-// The companion's face: a soft square held by four corner brackets, with two
-// dot eyes and a small smile. The eyes and mouth lean toward the cursor, and
-// the eyes blink now and then. Drawn as an SVG so the same face scales from the
-// small mark to the large recorder.
-const LOOK_MAX = 9; // how far the features travel, in viewBox units
-const LOOK_REACH = 240; // cursor distance in px at which they reach that limit
+// The companion's face: the Bluu orb, a round blue glass ball with two eyes and
+// a smile. It follows the cursor, glances around and blinks on its own. The
+// orb's body fills 230 of its 300 units, the rest being glow, so it is drawn
+// larger and pulled back in to make the ball itself fill its wrapper.
+const BLOB_FILL = 300 / 230;
 
-function Eyes({ talking = false }) {
-  const ref = useRef(null);
-  const lookX = useSpring(0, { bounce: 0, duration: 0.4 });
-  const lookY = useSpring(0, { bounce: 0, duration: 0.4 });
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const follow = (e) => {
-      const box = ref.current?.getBoundingClientRect();
-      if (!box) return;
-      const dx = e.clientX - (box.left + box.width / 2);
-      const dy = e.clientY - (box.top + box.height / 2);
-      const dist = Math.hypot(dx, dy) || 1;
-      const reach = (Math.min(dist, LOOK_REACH) / LOOK_REACH) * LOOK_MAX;
-      lookX.set((dx / dist) * reach);
-      lookY.set((dy / dist) * reach);
-    };
-    window.addEventListener("pointermove", follow);
-    return () => window.removeEventListener("pointermove", follow);
-  }, [lookX, lookY]);
-
+function Face() {
   return (
-    <svg ref={ref} className="face" viewBox="0 0 100 100" aria-hidden="true">
-      <rect className="face-fill" x="6" y="6" width="88" height="88" rx="22" />
-      <path
-        className="face-frame"
-        d="M6 38 V28 A22 22 0 0 1 28 6 H38 M62 6 H72 A22 22 0 0 1 94 28 V38 M94 62 V72 A22 22 0 0 1 72 94 H62 M38 94 H28 A22 22 0 0 1 6 72 V62"
-      />
-      <motion.g style={{ x: lookX, y: lookY }}>
-        <motion.g
-          animate={{ scaleY: [1, 1, 0.1, 1] }}
-          transition={{ duration: 4, times: [0, 0.93, 0.965, 1], repeat: Infinity, ease: "easeInOut" }}
-        >
-          <circle className="face-eye" cx="33" cy="44" r="4.5" />
-          <circle className="face-eye" cx="67" cy="44" r="4.5" />
-        </motion.g>
-        {talking ? (
-          <motion.ellipse
-            className="face-mouth-open"
-            cx="50"
-            cy="62"
-            rx="7"
-            initial={{ ry: 2 }}
-            animate={{ ry: [2, 7, 3, 8, 2.5, 6, 2] }}
-            transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ) : (
-          <path className="face-mouth" d="M39 59 Q50 67 61 59" />
-        )}
-      </motion.g>
-    </svg>
+    <BlueBlob
+      size={`${BLOB_FILL * 100}%`}
+      label={null}
+      style={{ display: "block", maxWidth: "none", margin: `${((1 - BLOB_FILL) / 2) * 100}%` }}
+    />
   );
 }
 
 // The large companion on the recorder. While it is speaking it bobs and tilts
-// a little and its mouth opens and closes; otherwise it rests with a smile.
+// a little; otherwise it rests.
 function Speaker({ talking }) {
   return (
     <motion.div
@@ -145,7 +101,7 @@ function Speaker({ talking }) {
           : { type: "spring", bounce: 0, duration: 0.4 }
       }
     >
-      <Eyes talking={talking} />
+      <Face />
     </motion.div>
   );
 }
@@ -162,7 +118,7 @@ export function Orb({ size = 28 }) {
       transition={{ type: "spring", bounce: 0.35, duration: 0.6, delay: 0.25 }}
       aria-hidden="true"
     >
-      <Eyes />
+      <Face />
     </motion.span>
   );
 }
@@ -697,6 +653,61 @@ function SignalCards() {
   );
 }
 
+// The four signals at a glance, after the Vitals view in Apple Health: one dot
+// per signal, inside the middle band while it is in its usual range and out in
+// an outer band once it has left it.
+function Vitals() {
+  const signals = rows.map((r) => {
+    // How far the latest week sits from the baseline, in usual ranges.
+    const z = (r.v[r.v.length - 1] - r.baseline) / r.band;
+    const outlier = Math.abs(z) > 1;
+    // Outliers sit in the middle of their band; the rest spread across the blue one.
+    const y = outlier ? (z > 0 ? 10 : 90) : 50 - z * 18;
+    return { ...r, outlier, y };
+  });
+  const outliers = signals.filter((sig) => sig.outlier).length;
+
+  return (
+    <Card className="vitals">
+      <div
+        className="vitals-chart"
+        role="img"
+        aria-label={signals.map((sig) => `${sig.label}: ${sig.outlier ? `${sig.change.toLowerCase()} than usual` : "in your usual range"}`).join(". ")}
+      >
+        <span className="vitals-band high">High</span>
+        <span className="vitals-band typical">Baseline</span>
+        <span className="vitals-band low">Low</span>
+        {signals.map((sig, i) => (
+          <div key={sig.label} className="vitals-col">
+            <motion.span
+              className={`vitals-dot ${sig.outlier ? "outlier" : ""}`}
+              style={{ top: `${sig.y}%` }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ ...spring, delay: 0.3 + i * 0.08 }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="vitals-icons" aria-hidden="true">
+        {signals.map((sig) => (
+          <span key={sig.label} className={sig.outlier ? "outlier" : ""}>
+            <MetricIcon metric={sig.metric} size={20} />
+            <small>{sig.label}</small>
+          </span>
+        ))}
+      </div>
+      <div className="vitals-summary">
+        <span>Your signals</span>
+        <strong>
+          {outliers} {outliers === 1 ? "Outlier" : "Outliers"}
+        </strong>
+        <small>Last 12 weeks</small>
+      </div>
+    </Card>
+  );
+}
+
 /* 02 · Sense — Today */
 function Today({ next }) {
   const hr = [58, 57, 59, 56, 58, 61, 57];
@@ -713,16 +724,7 @@ function Today({ next }) {
       action={<Primary icon={Mic} onClick={next}>Log a thought</Primary>}
       trailing={patientProfile}
     >
-      <motion.div className="today-path" variants={item}>
-        <div className="path-heading">
-          <div>
-            <Label metric="heart">Your heart rhythm this week</Label>
-            <p className="card-foot">Within your usual range.</p>
-          </div>
-          <span>57 bpm</span>
-        </div>
-        <RhythmPath values={hr} labels={["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"]} />
-      </motion.div>
+      <Vitals />
       <div className="section-heading">
         <h5>Body & mind</h5>
         <Tag kind="sensor">Sensor</Tag>
@@ -1062,7 +1064,8 @@ function Weekly({ next }) {
 
 /* 07 · Learn — Pattern map */
 // Twelve weekly values per signal, against its baseline and usual range. The
-// first weeks sit inside the range; the last five drift away from it.
+// first weeks sit inside the range; the last five drift away from it. Today
+// shows the same four side by side.
 const rows = [
   { label: "Sleep", metric: "sleep", dir: "down", trend: "worse", change: "Lower", baseline: 7.5, band: 0.25, v: [7.5, 7.4, 7.6, 7.5, 7.3, 7.5, 7.4, 7.2, 7.1, 6.9, 6.8, 6.7] },
   { label: "Stress", metric: "stress", dir: "up", trend: "worse", change: "Higher", baseline: 35, band: 6, v: [34, 36, 33, 35, 37, 34, 38, 41, 45, 48, 53, 58] },

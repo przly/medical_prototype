@@ -810,6 +810,101 @@
   margin-bottom: 8px;
 }
 
+/* Today: the four signals as vitals, after Apple Health. A grey band for the
+   usual range, lighter bands either side of it for outliers. */
+.card.vitals {
+  gap: 0;
+}
+
+.vitals-chart {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 116px;
+  /* Room for the band labels, so no dot lands on one. */
+  padding-left: 64px;
+}
+
+.vitals-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 9px;
+  background: var(--app-fill);
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.vitals-band.high { top: 0; height: 20%; }
+.vitals-band.typical { top: 25%; height: 50%; background: #dadae1; }
+.vitals-band.low { top: 80%; height: 20%; }
+
+.vitals-col {
+  position: relative;
+}
+
+/* The same ring as the dots on the other charts; red once it is an outlier. */
+.vitals-dot {
+  position: absolute;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 4px solid #898b8c;
+  border-radius: 50%;
+  background: var(--app-card);
+}
+
+.vitals-dot.outlier {
+  border-color: var(--app-heart);
+}
+
+.vitals-icons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 12px;
+  padding-left: 64px;
+}
+
+.vitals-icons span {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.vitals-icons small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.vitals-summary {
+  display: grid;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--separator);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.vitals-summary strong {
+  font-family: var(--rounded);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--foreground);
+}
+
+.vitals-summary small {
+  font-size: 13px;
+  font-weight: 400;
+}
+
 .section-heading {
   display: flex;
   align-items: center;
@@ -1034,39 +1129,10 @@
   color: var(--muted);
 }
 
-/* The companion: a soft blue square in corner brackets, with a face. The
-   shape is drawn by the SVG, so the wrappers only size it. */
+/* The companion: the Bluu orb. It draws itself, so the wrappers only size it. */
 .orb-mini {
   display: inline-block;
   flex: none;
-}
-
-.face {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.face-fill {
-  fill: color-mix(in srgb, var(--accent) 16%, var(--surface));
-}
-
-.face-frame,
-.face-mouth {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 4;
-  stroke-linecap: round;
-}
-
-.face-mouth {
-  stroke-width: 4.5;
-}
-
-.face-eye,
-.face-mouth-open {
-  fill: var(--accent);
 }
 
 /* ---------- Capture ---------- */
