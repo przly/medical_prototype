@@ -959,16 +959,13 @@ function Weekly({ next }) {
       title="Your week"
       action={<Primary icon={TrendingUp} onClick={next}>See the long-term view</Primary>}
     >
-      <Card className="summary open-summary">
-        <span className="ai-label">
-          <Orb size={18} />
-          I noticed
-        </span>
+      <motion.div className="ai-says" variants={item}>
+        <Orb size={44} />
         <p>
-          A more stressful week than usual, with lower sleep and energy. Your
+          I noticed a more stressful week than usual, with lower sleep and energy. Your
           reflections often mentioned <b>work deadlines</b>.
         </p>
-      </Card>
+      </motion.div>
       <div className="section-heading"><h5>Weekly signals</h5><span>7 days</span></div>
       <Card>
         <div className="row-between">
@@ -1025,11 +1022,13 @@ function Weekly({ next }) {
 }
 
 /* 07 · Learn — Pattern map */
+// Twelve weekly values per signal, against its baseline and usual range. The
+// first weeks sit inside the range; the last five drift away from it.
 const rows = [
-  { label: "Sleep", metric: "sleep", v: [5, 6, 4, 3, 5, 6, 6, 3, 2, 4, 5, 6] },
-  { label: "Stress", metric: "stress", v: [3, 2, 4, 6, 3, 2, 2, 5, 6, 4, 3, 2] },
-  { label: "Mood", metric: "mood", v: [5, 6, 4, 3, 5, 6, 6, 4, 3, 4, 5, 6] },
-  { label: "Exercise", metric: "activity", v: [5, 6, 2, 1, 5, 6, 5, 2, 1, 3, 5, 6] },
+  { label: "Sleep", metric: "sleep", dir: "down", trend: "worse", change: "Lower", baseline: 7.5, band: 0.25, v: [7.5, 7.4, 7.6, 7.5, 7.3, 7.5, 7.4, 7.2, 7.1, 6.9, 6.8, 6.7] },
+  { label: "Stress", metric: "stress", dir: "up", trend: "worse", change: "Higher", baseline: 35, band: 6, v: [34, 36, 33, 35, 37, 34, 38, 41, 45, 48, 53, 58] },
+  { label: "Mood", metric: "mood", dir: "down", trend: "worse", change: "Lower", baseline: 4, band: 0.25, v: [4.1, 4, 4.2, 3.9, 4, 4.1, 3.9, 3.7, 3.6, 3.4, 3.3, 3.1] },
+  { label: "Exercise", metric: "activity", dir: "flat", change: "Stable", baseline: 3, band: 1, v: [3, 3, 4, 3, 2, 3, 3, 4, 3, 3, 2, 3] },
 ];
 
 function Patterns({ next }) {
@@ -1037,31 +1036,44 @@ function Patterns({ next }) {
     <Screen
       eyebrow="Last 12 weeks"
       title="Pattern map"
-      action={<Primary icon={ClipboardList} onClick={next}>Prepare for my session</Primary>}
+      action={<Primary icon={ClipboardList} onClick={next}>Set up meeting with a doctor</Primary>}
     >
       <Card>
         <h5 className="card-section-title">Your signals over time</h5>
-        <div className="heat">
-          {rows.map((r, ri) => (
-            <div key={r.label} className="heat-row">
-              <span>
-                <MetricIcon metric={r.metric} size={13} />
-                {r.label}
-              </span>
-              <div className="heat-cells">
-                {r.v.map((v, i) => (
-                  <motion.i
-                    key={i}
-                    style={{ background: metrics[r.metric].color, opacity: 0.15 + v * 0.14 }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2 + i * 0.03 + ri * 0.05, type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+        <ul className="readings signals">
+          {rows.map((r) => {
+            const DirIcon = { up: ArrowUpRight, down: ArrowDownRight, flat: Minus }[r.dir];
+            return (
+              <li key={r.label}>
+                <span className="reading-name">
+                  <span className="trend-name">
+                    <MetricIcon metric={r.metric} size={16} />
+                    {r.label}
+                  </span>
+                  <span className="reading-change">
+                    <span className={`change-tag ${r.trend ?? ""}`}>
+                      <DirIcon size={13} strokeWidth={2.75} aria-hidden="true" />
+                      {r.change}
+                    </span>
+                  </span>
+                </span>
+                <BaselineSpark
+                  values={r.v}
+                  baseline={r.baseline}
+                  band={r.band}
+                  color={trendColors[r.trend]}
+                  width={190}
+                  label={`${r.label} over the last 12 weeks against your baseline: ${r.change.toLowerCase()} in recent weeks`}
+                />
+              </li>
+            );
+          })}
+        </ul>
+        <div className="signals-axis" aria-hidden="true">
+          <span>12 weeks ago</span>
+          <span>Now</span>
         </div>
+        <p className="card-foot">Showing deviation from your baseline</p>
       </Card>
       <Card className="pattern pos">
         <Tag kind="pos">Positive pattern</Tag>

@@ -925,14 +925,6 @@
   font-size: 13px;
 }
 
-/* The weekly summary sits open on the canvas, without a card behind it. */
-.card.open-summary {
-  padding: 0 0 8px;
-  background: transparent;
-  font-size: 17px;
-  line-height: 1.45;
-}
-
 .card.sleep-summary {
   background: #15001f;
   color: #fff;
@@ -1533,35 +1525,24 @@
 
 /* ---------- Patterns ---------- */
 
-.heat {
-  display: grid;
-  gap: 8px;
+/* Signals over twelve weeks: the name and its direction, then a wide chart. */
+.readings.signals li {
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
 }
 
-.heat-row {
-  display: grid;
-  grid-template-columns: 86px 1fr;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
+.readings.signals li:first-child {
+  padding-top: 0;
 }
 
-.heat-row > span {
+/* Lines up with the charts, past the name column. */
+.signals-axis {
   display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.heat-cells {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 3px;
-}
-
-.heat-cells i {
-  aspect-ratio: 1;
-  border-radius: 4px;
+  justify-content: space-between;
+  margin-left: 112px;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .pattern p {
